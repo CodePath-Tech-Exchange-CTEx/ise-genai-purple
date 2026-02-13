@@ -1,6 +1,6 @@
 ### VARIABLES TO CHANGE - START
-PROJECT_ID=
-SERVICE_NAME=
+PROJECT_ID=oluwaremilekun-adeshina-fisk
+SERVICE_NAME=ise-genai-purple
 ### VARIABLES TO CHANGE - END
 
 # ----------- Manual Deployment ------------ #
