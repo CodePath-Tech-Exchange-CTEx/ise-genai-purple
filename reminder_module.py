@@ -27,8 +27,40 @@ def display_app_page():
             st.button("Add Reminder", key = "add_reminder", on_click=add_reminder)
     st.divider()
 
-    with st.container(border=True):
-        st.write("Im in a container!!!")
+    # reminder card template
+
+    left, center, right = st.columns([1, 5, 1])
+
+    with center:
+        with st.container(border=True):
+            with st.container(border=True): # reminder title (top)
+
+                tag, name, edit = st.columns([2, 6, 1], vertical_alignment="center")
+
+                with tag:
+                    st.markdown(':red-background[:red[Important]]')
+                
+                with name:
+                    st.markdown("**The big interview**", text_alignment="left")
+
+                with edit:
+                    st.button("", icon=":material/more_horiz:", key="edit1")
+            
+            
+            
+            with st.container(border=True): # reminder info (bottom)
+                priority, date, spacer, notify = st.columns([1.3, 3, .5, 2], vertical_alignment="center")
+                
+                with priority:
+                    st.markdown(":orange-background[:orange[Priority 1]]")
+
+                with date:
+                    st.markdown(":blue-background[Wednesday 3:30pm 3/15]", text_alignment="center")
+                
+                with notify:
+                    st.button("Notification")
+
+        
 
 
 
