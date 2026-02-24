@@ -6,11 +6,14 @@
 #############################################################################
 
 import streamlit as st
+from pages.reminder_page import display_reminder_page
 
 def display_app_page():
-    """Displays the home page of the app."""
-    st.title('Welcome to SDS!!!!!')
+    """Displays the reminder page of the app."""
+    reminder_page = st.Page(display_reminder_page, title="Reminders", icon=":material/home:")
 
+    pg = st.navigation([reminder_page])
+    pg.run()
 
 
 
