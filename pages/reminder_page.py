@@ -130,9 +130,9 @@ def add_reminder():
     }
 
     # Input fields for the dialog
-    new_reminder["title"] = st.text_input("Reminder Name", placeholder="Name of reminder", max_chars=50)
+    new_reminder["title"] = st.text_input("Reminder Name", placeholder="Name of reminder", max_chars=50, key="reminder_title")
     new_reminder["date"] = st.datetime_input("Date and Time", value=datetime.now(), format="MM/DD/YYYY")
-    new_reminder["priority"] = st.pills("Priority Level", ["Priority 1", "Priority 2", "Priority 3", "Priority 4", "Priority 5"])
+    new_reminder["priority"] = st.pills("Priority Level", ["Priority 1", "Priority 2", "Priority 3", "Priority 4", "Priority 5"], key="priority_pills")
     new_reminder["tag"] = st.text_input("Tag this reminder", placeholder='Leave empty to skip', max_chars=14)
     new_reminder["tag_color"] = st.pills(
         "Tag Color",
@@ -143,7 +143,7 @@ def add_reminder():
     # Submit button aligned to the right
     _, submit_col = st.columns([4, 1])
     with submit_col:
-        submitted = st.button("Submit", type="primary")
+        submitted = st.button("Submit", key="submit_new_reminder", type="primary")
 
     # Validation logic
     if submitted:
@@ -189,7 +189,7 @@ def display_reminder_page():
         with button_col1:
             st.button("Add Reminder", key="add_reminder", on_click=add_reminder, width="stretch")
         with button_col2:
-            st.button("Clear Completed", on_click=clear_completed)
+            st.button("Clear Completed", on_click=clear_completed, key="clear_completed", width="stretch")
 
     st.divider()
     load_reminders()  # Load all reminders into the UI
