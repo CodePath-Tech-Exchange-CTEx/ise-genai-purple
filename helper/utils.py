@@ -52,7 +52,5 @@ def add_event_dialog():
 
 
 def add_event_button():
-    init_calendar_state()
-
     if st.button("➕ Add event", key="➕ Add event"):
         add_event_dialog()
