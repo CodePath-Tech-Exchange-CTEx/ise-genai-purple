@@ -32,7 +32,7 @@ def display_todo_page():
         st.session_state.tasks = []
 
     #write task
-    st.write("###add a new task")
+    st.subheader("add a new task!")
     input_col1, input_col2, input_col3 = st.columns([1, 1, 2])
 
     with input_col1:
@@ -57,31 +57,28 @@ def display_todo_page():
     col_school, col_work, col_life, col_urgent = st.columns(4)
 
     with col_school:
-        st.subheader("SCHOOL")
+        st.subheader(":blue[SCHOOL]")
         for t in st.session_state.tasks:
             if t["category"] == "school":
                 st.checkbox(f"{t['task']} ({t['date'].strftime('%m/%d')})", key=t['task']+'school')
 
     with col_work:
-        st.subheader("WORK")
+        st.subheader(":green[WORK]")
         for t in st.session_state.tasks:
             if t["category"] == "work":
                 st.checkbox(f"{t['task']} ({t['date'].strftime('%m/%d')})", key=t['task']+'work')
 
     with col_life:
-        st.subheader("LIFE")
+        st.subheader(":orange[LIFE]")
         for t in st.session_state.tasks:
             if t["category"] == "life":
                 st.checkbox(f"{t['task']} ({t['date'].strftime('%m/%d')})", key=t['task']+'life')
 
     with col_urgent:
-        st.subheader("URGENT 🕒")
+        st.subheader(":red[URGENT 🕒]")
         for t in st.session_state.tasks:
             if t["category"] == "urgent 🕒":
                 st.checkbox(f"{t['task']} ({t['date'].strftime('%m/%d')})", key=t['task']+'urgent')
 
-
-# --- EXECUTION BLOCK ---
-# We change this to run YOUR function so you can actually see the to-do list
 if __name__ == '__main__':
     display_todo_page()
