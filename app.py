@@ -1,10 +1,3 @@
-#############################################################################
-# app.py
-#
-# This file contains the entrypoint for the app.
-#
-#############################################################################
-
 import streamlit as st
 from pages.home import display_home_page
 
