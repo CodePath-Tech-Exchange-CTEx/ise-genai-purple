@@ -60,7 +60,8 @@ class FakeClient:
 
 
 def test_calendar_page_renders(monkeypatch):
-    monkeypatch.setattr(calendar_page, "get_calendar_events", lambda: [])
+    fake_client = FakeClient(rows=[])
+    monkeypatch.setattr(utils, "get_client", lambda: fake_client)
 
     at = make_app().run()
     assert_app_ok(at)
@@ -70,7 +71,8 @@ def test_calendar_page_renders(monkeypatch):
 
 
 def test_add_event_button_is_present(monkeypatch):
-    monkeypatch.setattr(calendar_page, "get_calendar_events", lambda: [])
+    fake_client = FakeClient(rows=[])
+    monkeypatch.setattr(utils, "get_client", lambda: fake_client)
 
     at = make_app().run()
     assert_app_ok(at)
