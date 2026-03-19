@@ -81,7 +81,7 @@ def test_add_event_button_is_present(monkeypatch):
 
 def test_add_event_to_table_invalid_does_not_query(monkeypatch):
     fake_client = FakeClient()
-    monkeypatch.setattr(utils, "client", fake_client)
+    monkeypatch.setattr(utils, "get_client", lambda: fake_client)
 
     start = datetime(2026, 2, 21, 12, 0)
     end = datetime(2026, 2, 21, 11, 0)
@@ -96,7 +96,7 @@ def test_add_event_to_table_invalid_does_not_query(monkeypatch):
 
 def test_add_event_to_table_valid_runs_insert_query(monkeypatch):
     fake_client = FakeClient()
-    monkeypatch.setattr(utils, "client", fake_client)
+    monkeypatch.setattr(utils, "get_client", lambda: fake_client)
 
     start = datetime(2026, 2, 21, 10, 0)
     end = datetime(2026, 2, 21, 11, 0)
@@ -115,7 +115,7 @@ def test_add_event_to_table_valid_runs_insert_query(monkeypatch):
 
 def test_update_event_in_table_invalid_does_not_query(monkeypatch):
     fake_client = FakeClient()
-    monkeypatch.setattr(utils, "client", fake_client)
+    monkeypatch.setattr(utils, "get_client", lambda: fake_client)
 
     start = datetime(2026, 2, 21, 14, 0)
     end = datetime(2026, 2, 21, 13, 0)
@@ -130,7 +130,7 @@ def test_update_event_in_table_invalid_does_not_query(monkeypatch):
 
 def test_update_event_in_table_valid_runs_update_query(monkeypatch):
     fake_client = FakeClient()
-    monkeypatch.setattr(utils, "client", fake_client)
+    monkeypatch.setattr(utils, "get_client", lambda: fake_client)
 
     start = datetime(2026, 2, 21, 15, 0)
     end = datetime(2026, 2, 21, 16, 0)
@@ -198,7 +198,7 @@ def test_get_calendar_events_queries_and_formats_rows(monkeypatch):
     ]
 
     fake_client = FakeClient(rows=rows)
-    monkeypatch.setattr(utils, "client", fake_client)
+    monkeypatch.setattr(utils, "get_client", lambda: fake_client)
 
     events = utils.get_calendar_events()
 

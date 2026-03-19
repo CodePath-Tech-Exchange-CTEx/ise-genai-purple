@@ -4,7 +4,8 @@ from google.cloud import bigquery
 import time
 import uuid
 
-client = bigquery.Client()
+def get_client():
+    return bigquery.Client()
 
 
 def add_event_to_table(title: str, start_dt: datetime, end_dt: datetime):
@@ -26,7 +27,7 @@ def add_event_to_table(title: str, start_dt: datetime, end_dt: datetime):
         ]
     )
 
-    client.query(query, job_config=job_config).result()
+    get_client().query(query, job_config=job_config).result()
     return True, "Event added."
 
 
@@ -51,7 +52,7 @@ def update_event_in_table(event_id: str, title: str, start_dt: datetime, end_dt:
         ]
     )
 
-    client.query(query, job_config=job_config).result()
+    get_client().query(query, job_config=job_config).result()
     return True, "Event updated."
 
 
@@ -129,5 +130,5 @@ def get_calendar_events():
     SELECT id, title, start_date_time, end_date_time
     FROM `joshua-stevenson-hu.team_purple_dataset.events_table`
     """
-    query_events = client.query(query).result()
+    query_events = get_client().query(query).result()
     return turn_to_right_format(query_events)
