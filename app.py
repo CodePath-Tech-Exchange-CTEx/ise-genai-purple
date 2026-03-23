@@ -1,11 +1,12 @@
 import streamlit as st
 from pages.home import display_home_page
+from pages.reminder import display_reminder_page
 
 def display_app_page():
     """Displays the home page of the app."""
     home_page = st.Page(display_home_page, title="Home", icon=":material/home:")
-
-    pg = st.navigation([home_page])
+    reminder_page = st.Page(display_reminder_page, title="Reminders", icon=":material/priority_high:")
+    pg = st.navigation([home_page, reminder_page])
     pg.run()
 
 
