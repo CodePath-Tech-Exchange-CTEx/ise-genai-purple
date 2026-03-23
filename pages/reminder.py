@@ -1,5 +1,6 @@
 import streamlit as st
 from datetime import datetime
+from helper.notification_data import get_item_data
 
 # ---------------------------
 # Session State Initialization
@@ -55,7 +56,7 @@ def load_reminders():
     _, center, _ = st.columns([1, 5, 1])  # Center the reminder content
 
     if not reminders:
-        center.error("Add some reminders")  # Prompt if no reminders exist
+        center.info("Add some reminders")  # Prompt if no reminders exist
         return
 
     with center:
@@ -90,10 +91,9 @@ def load_reminders():
                     with priority_col:
                         priority_color_map = {
                             "Priority 1": "red",
-                            "Priority 2": "orange",
-                            "Priority 3": "yellow",
-                            "Priority 4": "green",
-                            "Priority 5": "blue"
+                            "Priority 2": "yellow",
+                            "Priority 3": "green",
+                            "No Priority": "gray",
                         }
                         color = priority_color_map.get(reminder.get("priority"), "gray")
                         if reminder.get("priority"):
@@ -101,7 +101,7 @@ def load_reminders():
 
                     # Display formatted date
                     with date_col:
-                        formatted_date = format_date(reminder.get("date"))
+                        formatted_date = format_date(reminder.get("date_time"))
                         st.markdown(f":blue-background[{formatted_date}]", text_alignment="center")
 
                     # Checkbox to mark reminder as completed
@@ -122,23 +122,46 @@ def add_reminder():
     # Initialize a new reminder dictionary with default values
     new_reminder = {
         "title": "",
-        "date": datetime.now(),
-        "priority": "",
-        "tag": None,
-        "tag_color": "",
+        "type": None,
+        "date_time": datetime.now(),
+        "repeat": False,
+        "interval": None,
+        # "priority": "",
+        # "tag": None,
+        # "tag_color": "",
         "completed": False
     }
+    item = {}
 
     # Input fields for the dialog
-    new_reminder["title"] = st.text_input("Reminder Name", placeholder="Name of reminder", max_chars=50, key="reminder_title")
-    new_reminder["date"] = st.datetime_input("Date and Time", format="MM/DD/YYYY")
-    new_reminder["priority"] = st.pills("Priority Level", ["Priority 1", "Priority 2", "Priority 3", "Priority 4", "Priority 5"], key="priority_pills")
-    new_reminder["tag"] = st.text_input("Tag this reminder", placeholder='Leave empty to skip', max_chars=14)
-    new_reminder["tag_color"] = st.pills(
-        "Tag Color",
-        ["red", "orange", "yellow", "green", "blue", "violet", "gray"],
-        disabled=not new_reminder["tag"]  # Disable color selection if no tag
-    )
+    new_reminder["type"] = st.pills("Type of Reminder", ["Event (from calendar)", "Task (from to-do)"])
+
+    new_reminder["title"] = st.text_input("Title of the item:", placeholder="Preexisting event or task")
+    if new_reminder["title"]:
+        item = get_item_data(new_reminder["title"], new_reminder["type"])
+        
+
+    new_reminder["date_time"] = st.datetime_input("Notify me at:", format="MM/DD/YYYY")
+
+    new_reminder["repeat"] = True if st.pills("Repeat", ["Yes", "No"]) == "Yes" else False
+
+    
+    if new_reminder["repeat"]: 
+        new_reminder["interval"] = st.pills("Repeat interval", ["Hourly", "Daily", "Weekly", "Monthly", "Custom"])
+
+        if new_reminder["interval"] == "Custom":
+            new_reminder["interval"] = st.text_input("Custom interval", placeholder="Enter in minutes")
+        elif new_reminder["interval"] == "Hourly": new_reminder["interval"] = 60
+        elif new_reminder["interval"] == "Daily": new_reminder["interval"] = 1440
+        elif new_reminder["interval"] == "Weekly": new_reminder["interval"] = 10080
+        elif new_reminder["interval"] == "Monthly": new_reminder["interval"] = 43830
+
+
+    # new_reminder["priority"] = st.pills("Priority Level (1 is the highest priority)", ["Priority 1", "Priority 2", "Priority 3", "No Priority"], key="priority_pills")
+
+    # new_reminder["tag"] = st.text_input("Tag this reminder", placeholder='Leave empty to skip', max_chars=14)
+    # if new_reminder["tag"]:
+    #     new_reminder["tag_color"] = st.pills("Tag Color", ["red", "orange", "yellow", "green", "blue", "violet", "gray"])
 
     # Submit button aligned to the right
     _, submit_col = st.columns([4, 1])
@@ -150,10 +173,15 @@ def add_reminder():
         errors = []
         if not new_reminder["title"].strip():
             errors.append("Title is required.")
-        if not new_reminder["priority"]:
-            errors.append("Please select a priority level.")
-        if new_reminder["tag"] and not new_reminder["tag_color"]:
-            errors.append("Select a tag color if you add a tag.")
+        # if not new_reminder["priority"]:
+        #     errors.append("Please select a priority level.")
+        # if new_reminder["tag"] and not new_reminder["tag_color"]:
+        #     errors.append("Select a tag color if you add a tag.")
+        if not new_reminder["type"]:
+            errors.append("You must select a type.")
+        if not item:
+            errors.append("Event or task doesn't exist.")
+        
 
         # Display validation errors
         if errors:
