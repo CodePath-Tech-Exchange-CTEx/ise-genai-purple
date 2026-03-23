@@ -1,22 +1,20 @@
 #############################################################################
-# home.py
+# calendar.py
 #
-# This file is the home page of the app.
+# This file is the calendar page of the app.
 #
 #############################################################################
 
 
 import streamlit as st
 from helper.constants import calendar_options, custom_css
-from helper.utils import init_calendar_state
 from streamlit_calendar import calendar
-from helper.utils import add_event_button
+from helper.utils import add_event_button, get_calendar_events, event_dialog
 
 
-def display_home_page():
-    """Displays the home page of the app."""
-    init_calendar_state()
-    display_calendar(st.session_state.calendar_events, calendar_options, custom_css)
+def display_calendar_page():
+    """Displays the calendar page of the app."""
+    display_calendar(get_calendar_events(), calendar_options, custom_css)
 
 def display_calendar(calendar_events, calendar_options, custom_css):
     """Displays the calendar UI to see events in this productivity app
@@ -25,13 +23,20 @@ def display_calendar(calendar_events, calendar_options, custom_css):
     calendar_options: Custom options to specify calendar attributes
     custom_css: Custom styling for calendar
     """
+    st.title("📅 Calendar")
+    st.divider()
     add_event_button()
-    calendar_ui = calendar(
+
+    calendar_state = calendar(
         events=calendar_events,
         options=calendar_options,
         custom_css=custom_css,
-        key='calendar',
+        key="calendar",
     )
 
+    if calendar_state and calendar_state.get("callback") == "eventClick":
+        clicked_event = calendar_state["eventClick"]["event"]
+        event_dialog(clicked_event)
+
 if __name__ == '__main__':
-    display_home_page()
+    display_calendar_page()

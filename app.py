@@ -1,11 +1,18 @@
 import streamlit as st
-from pages.home import display_home_page
+from pages.calendar import display_calendar_page
+from database.events import create_events_table
+
+create_events_table()
 
 def display_app_page():
-    """Displays the home page of the app."""
-    home_page = st.Page(display_home_page, title="Home", icon=":material/home:")
+    """Displays the different pages of the app."""
+    st.set_page_config(
+        page_title="Productivity App",
+        page_icon="📅",
+    )
+    calendar_page = st.Page(display_calendar_page, title="Calendar", icon=":material/calendar_month:")
 
-    pg = st.navigation([home_page])
+    pg = st.navigation([calendar_page], position="top")
     pg.run()
 
 
