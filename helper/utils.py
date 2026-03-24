@@ -95,7 +95,7 @@ def event_dialog(event_data=None):
                     success, message = add_event_to_table(title, start_dt, end_dt)
 
             if success:
-                st.toast(f"Event {"updated" if is_edit else "saved"} successfully 🎉")
+                st.toast(f"Event {'updated' if is_edit else 'saved'} successfully 🎉")
                 time.sleep(1)
                 st.rerun()
             else:
