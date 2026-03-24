@@ -3,13 +3,6 @@ from pages.todo import display_todo_page
 from streamlit.testing.v1 import AppTest
 from modules import display_post, display_activity_summary, display_genai_advice, display_recent_workouts
 
-class TestDisplayRecentWorkouts(unittest.TestCase):
-    """Tests the display_recent_workouts function."""
-
-    def test_foo(self):
-        """Tests foo."""
-        pass
-
 class TestDisplayTodoPage(unittest.TestCase):
     """tests the display_todo_page function."""
 
