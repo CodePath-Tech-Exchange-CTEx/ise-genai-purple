@@ -58,7 +58,7 @@ class TestGetUserActivities(unittest.TestCase):
         ]
         fake_client = FakeClient(rows=fake_rows)
 
-        with patch('data_fetcher.client', fake_client):
+        with patch('data_fetcher.get_client', return_value=fake_client):
             result = data_fetcher.get_user_activities('user1', '2026-02-23')
 
         self.assertEqual(len(result), 2)
@@ -67,19 +67,19 @@ class TestGetUserActivities(unittest.TestCase):
 
     def test_queries_correct_table(self):
         fake_client = FakeClient(rows=[])
-        with patch('data_fetcher.client', fake_client):
+        with patch('data_fetcher.get_client', return_value=fake_client):
             data_fetcher.get_user_activities('user1', '2026-02-23')
         self.assertIn('analyser_table', fake_client.last_query)
 
     def test_returns_empty_list_when_no_data(self):
         fake_client = FakeClient(rows=[])
-        with patch('data_fetcher.client', fake_client):
+        with patch('data_fetcher.get_client', return_value=fake_client):
             result = data_fetcher.get_user_activities('user1', '2026-02-23')
         self.assertEqual(result, [])
 
     def test_passes_correct_parameters(self):
         fake_client = FakeClient(rows=[])
-        with patch('data_fetcher.client', fake_client):
+        with patch('data_fetcher.get_client', return_value=fake_client):
             data_fetcher.get_user_activities('user1', '2026-02-23')
         params = {p.name: p.value for p in fake_client.last_job_config.query_parameters}
         self.assertEqual(params['user_id'], 'user1')
@@ -94,27 +94,27 @@ class TestGetActivityHistory(unittest.TestCase):
             {'title': 'Gaming', 'time_span': 90.0, 'category': 'Fun', 'date': date(2026, 2, 22)},
         ]
         fake_client = FakeClient(rows=fake_rows)
-        with patch('data_fetcher.client', fake_client):
+        with patch('data_fetcher.get_client', return_value=fake_client):
             result = data_fetcher.get_activity_history('user1', days=7)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['title'], 'Gaming')
 
     def test_default_days_is_7(self):
         fake_client = FakeClient(rows=[])
-        with patch('data_fetcher.client', fake_client):
+        with patch('data_fetcher.get_client', return_value=fake_client):
             data_fetcher.get_activity_history('user1')
         params = {p.name: p.value for p in fake_client.last_job_config.query_parameters}
         self.assertEqual(params['days'], 7)
 
     def test_uses_date_sub_in_query(self):
         fake_client = FakeClient(rows=[])
-        with patch('data_fetcher.client', fake_client):
+        with patch('data_fetcher.get_client', return_value=fake_client):
             data_fetcher.get_activity_history('user1', days=7)
         self.assertIn('DATE_SUB', fake_client.last_query)
 
     def test_returns_empty_list_when_no_history(self):
         fake_client = FakeClient(rows=[])
-        with patch('data_fetcher.client', fake_client):
+        with patch('data_fetcher.get_client', return_value=fake_client):
             result = data_fetcher.get_activity_history('user1', days=7)
         self.assertEqual(result, [])
 
@@ -130,21 +130,21 @@ class TestGetActivitiesByCategory(unittest.TestCase):
             {'title': 'Reading',  'time_span': 45.0,  'category': 'Productive', 'date': date(2026, 2, 22)},
         ]
         fake_client = FakeClient(rows=fake_rows)
-        with patch('data_fetcher.client', fake_client):
+        with patch('data_fetcher.get_client', return_value=fake_client):
             result = data_fetcher.get_activities_by_category('user1', 'Productive')
         self.assertEqual(len(result), 2)
         self.assertTrue(all(r['category'] == 'Productive' for r in result))
 
     def test_passes_category_parameter(self):
         fake_client = FakeClient(rows=[])
-        with patch('data_fetcher.client', fake_client):
+        with patch('data_fetcher.get_client', return_value=fake_client):
             data_fetcher.get_activities_by_category('user1', 'Fun')
         params = {p.name: p.value for p in fake_client.last_job_config.query_parameters}
         self.assertEqual(params['category'], 'Fun')
 
     def test_returns_empty_for_unknown_category(self):
         fake_client = FakeClient(rows=[])
-        with patch('data_fetcher.client', fake_client):
+        with patch('data_fetcher.get_client', return_value=fake_client):
             result = data_fetcher.get_activities_by_category('user1', 'NonExistent')
         self.assertEqual(result, [])
 
@@ -161,7 +161,7 @@ class TestGetDailySummary(unittest.TestCase):
             {'category': 'Unproductive', 'total_minutes': 90.0},
         ]
         fake_client = FakeClient(rows=fake_rows)
-        with patch('data_fetcher.client', fake_client):
+        with patch('data_fetcher.get_client', return_value=fake_client):
             result = data_fetcher.get_daily_summary('user1', '2026-02-23')
         self.assertEqual(len(result), 3)
         self.assertEqual(result[0]['category'], 'Productive')
@@ -169,13 +169,13 @@ class TestGetDailySummary(unittest.TestCase):
 
     def test_uses_group_by_in_query(self):
         fake_client = FakeClient(rows=[])
-        with patch('data_fetcher.client', fake_client):
+        with patch('data_fetcher.get_client', return_value=fake_client):
             data_fetcher.get_daily_summary('user1', '2026-02-23')
         self.assertIn('GROUP BY', fake_client.last_query)
 
     def test_returns_empty_when_no_data(self):
         fake_client = FakeClient(rows=[])
-        with patch('data_fetcher.client', fake_client):
+        with patch('data_fetcher.get_client', return_value=fake_client):
             result = data_fetcher.get_daily_summary('user1', '2026-02-23')
         self.assertEqual(result, [])
 

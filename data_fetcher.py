@@ -10,7 +10,8 @@ import vertexai
 from vertexai.generative_models import GenerativeModel
 
 # --- Setup ---
-client = bigquery.Client()
+def get_client():
+    return bigquery.Client()
 TABLE = "joshua-stevenson-hu.team_purple_dataset.analyser_table"
 PROJECT_ID = "oluwaremilekun-adeshina-fisk"
 REGION = "us-central1"
@@ -74,7 +75,7 @@ def get_user_activities(user_id, date):
         ]
     )
 
-    results = client.query(query, job_config=job_config).result()
+    results = get_client().query(query, job_config=job_config).result()
     return [dict(row) for row in results]
 
 
@@ -98,7 +99,7 @@ def get_activity_history(user_id, days=7):
         ]
     )
 
-    results = client.query(query, job_config=job_config).result()
+    results = get_client().query(query, job_config=job_config).result()
     return [dict(row) for row in results]
 
 
@@ -122,7 +123,7 @@ def get_activities_by_category(user_id, category):
         ]
     )
 
-    results = client.query(query, job_config=job_config).result()
+    results = get_client().query(query, job_config=job_config).result()
     return [dict(row) for row in results]
 
 
@@ -147,7 +148,7 @@ def get_daily_summary(user_id, date):
         ]
     )
 
-    results = client.query(query, job_config=job_config).result()
+    results = get_client().query(query, job_config=job_config).result()
     return [dict(row) for row in results]
 
 
@@ -205,5 +206,5 @@ def add_activity(user_id, title, time_span, category, activity_date):
         ]
     )
 
-    client.query(query, job_config=job_config).result()
+    get_client().query(query, job_config=job_config).result()
     return True, "Activity logged successfully."
