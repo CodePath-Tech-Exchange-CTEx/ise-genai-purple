@@ -7,15 +7,13 @@ def display_todo_page():
     from vertexai.generative_models import GenerativeModel
     
     st.title("to-do")
-    client = bigquery.Client(project="project-6e90bd07-d669-4de8-930")
-    query = "SELECT * FROM `joshua-stevenson-hu.team_purple_dataset.tasks_table`"
-    
+    client = None
     try:
+        client = bigquery.Client(project="project-6e90bd07-d669-4de8-930")
+        query = "SELECT * FROM `joshua-stevenson-hu.team_purple_dataset.tasks_table`"
         tasks_list = client.query(query).to_dataframe().to_dict('records')
     except Exception as e:
         tasks_list = []
-        # THIS WILL SHOW US EXACTLY WHY IT IS FAILING!
-        st.error(f"BigQuery Error: {e}")
 
     #write task
     st.subheader("add a new task!")
