@@ -86,9 +86,12 @@ def display_time_analyser():
 
         st.markdown("### 🤖 AI Suggestions")
         with st.expander("View Recommendations", expanded=True):
-            with st.spinner("Generating personalised advice..."):
-                advice = get_genai_advice(USER_ID)
-            st.write(advice['content'])
+            try:
+                with st.spinner("Generating personalised advice..."):
+                    advice = get_genai_advice(USER_ID)
+                st.write(advice['content'])
+            except Exception:
+                st.warning("⚠️ AI suggestions unavailable right now. Check back soon!")
 
         st.markdown("---")
         if st.button("➕ Log Activity", key="log_activity"):

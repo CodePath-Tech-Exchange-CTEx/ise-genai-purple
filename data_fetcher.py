@@ -12,7 +12,7 @@ from vertexai.generative_models import GenerativeModel
 # --- Setup ---
 client = bigquery.Client()
 TABLE = "joshua-stevenson-hu.team_purple_dataset.analyser_table"
-PROJECT_ID = "joshua-stevenson-hu"
+PROJECT_ID = "oluwaremilekun-adeshina-fisk"
 REGION = "us-central1"
 
 users = {
@@ -166,7 +166,7 @@ def get_genai_advice(user_id):
         summary_text = "\n".join(lines)
 
     vertexai.init(project=PROJECT_ID, location=REGION)
-    model = GenerativeModel("gemini-2.0-flash")
+    model = GenerativeModel("gemini-2.5-flash")
 
     prompt = f"""
     A student has logged the following activities today:

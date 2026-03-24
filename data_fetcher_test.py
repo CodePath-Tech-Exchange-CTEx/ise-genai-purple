@@ -83,7 +83,7 @@ class TestGetUserActivities(unittest.TestCase):
             data_fetcher.get_user_activities('user1', '2026-02-23')
         params = {p.name: p.value for p in fake_client.last_job_config.query_parameters}
         self.assertEqual(params['user_id'], 'user1')
-        self.assertEqual(params['date'], '2026-02-23')
+        self.assertEqual(str(params['date']), '2026-02-23')
 
 
 # GET #2: get_activity_history
