@@ -1,6 +1,7 @@
 streamlit
+google-cloud-bigquery
+google-cloud-aiplatform
 streamlit-calendar
 pytest
-google-cloud-bigquery
 plotly
 vertexai
