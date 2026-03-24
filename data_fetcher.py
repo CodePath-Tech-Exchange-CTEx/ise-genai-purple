@@ -208,3 +208,52 @@ def add_activity(user_id, title, time_span, category, activity_date):
 
     get_client().query(query, job_config=job_config).result()
     return True, "Activity logged successfully."
+
+def get_user_posts(user_id):
+    """Returns a list of a user's posts. Kept for compatibility."""
+    import random
+    content = random.choice([
+        'Had a great workout today!',
+        'The AI really motivated me to push myself further, I ran 10 miles!',
+    ])
+    return [{
+        'user_id': user_id,
+        'post_id': 'post1',
+        'timestamp': '2024-01-01 00:00:00',
+        'content': content,
+        'image': 'image_url',
+    }]
+
+
+def get_user_sensor_data(user_id, workout_id):
+    """Returns sensor data. Kept for compatibility."""
+    import random
+    sensor_data = []
+    sensor_types = ['accelerometer', 'gyroscope', 'pressure', 'temperature', 'heart_rate']
+    for index in range(random.randint(5, 100)):
+        random_minute = str(random.randint(0, 59)).zfill(2)
+        timestamp = '2024-01-01 00:' + random_minute + ':00'
+        sensor_data.append({
+            'sensor_type': random.choice(sensor_types),
+            'timestamp': timestamp,
+            'data': random.random() * 100
+        })
+    return sensor_data
+
+
+def get_user_workouts(user_id):
+    """Returns user workouts. Kept for compatibility."""
+    import random
+    workouts = []
+    for index in range(random.randint(1, 3)):
+        workouts.append({
+            'workout_id': f'workout{index}',
+            'start_timestamp': '2024-01-01 00:00:00',
+            'end_timestamp': '2024-01-01 00:30:00',
+            'start_lat_lng': (1 + random.randint(0, 100) / 100, 4 + random.randint(0, 100) / 100),
+            'end_lat_lng': (1 + random.randint(0, 100) / 100, 4 + random.randint(0, 100) / 100),
+            'distance': random.randint(0, 200) / 10.0,
+            'steps': random.randint(0, 20000),
+            'calories_burned': random.randint(0, 100),
+        })
+    return workouts
