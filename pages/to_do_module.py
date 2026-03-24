@@ -3,6 +3,8 @@ def display_todo_page():
     import streamlit as st
     from google.cloud import bigquery
     import time
+    import vertexai
+    from vertexai.generative_models import GenerativeModel
     st.title("to-do")
     client = bigquery.Client()
     query = "SELECT * FROM `joshua-stevenson-hu.team_purple_dataset.tasks_table`"
@@ -39,6 +41,44 @@ def display_todo_page():
             st.rerun() 
 
     st.divider()
+
+    st.subheader("AI tasks overview")
+    if st.button("generate overview"):
+        if not tasks_list:
+            st.info("you don't have any tasks yet! add some so i can help you plan!")
+        else:
+            with st.spinner("analyzing tasks..."):
+                try:
+                    #tasks for ai
+                    task_strings = []
+                    for t in tasks_list:
+                        task_strings.append(f"- {t['name_of_task']} (Category: {t['category']}, Due: {t['due_date']})")
+                    task_summary = "\n".join(task_strings)
+
+                    #ai prompt
+                    prompt = f"""
+                    You are a helpful productivity coach for the user. 
+                    Here is the current to-do list:
+                    
+                    {task_summary}
+
+                    Please give me a short, fun overview of what needs to be prioritized first. 
+                    Also provide quick tips to stay focused/productive. 
+                    Keep the response short.
+                    """
+
+                    #call vertex ai
+                    vertexai.init()
+                    model = GenerativeModel("gemini-2.5-flash-lite")
+                    response = model.generate_content(prompt)
+
+                    #output response
+                    st.info(response.text)
+                except Exception as e:
+                    st.error(f"couldn't generate the overview: {e}")
+                    
+    st.divider()
+
     col_school, col_work, col_life, col_urgent = st.columns(4)
 
     with col_school:

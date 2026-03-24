@@ -71,5 +71,14 @@ class TestDisplayTodoPage(unittest.TestCase):
         self.assertIn(":orange[LIFE]", subheaders)
         self.assertIn(":red[URGENT 🕒]", subheaders)
 
+    def test_todo_ai_elements(self):
+        """checks that the ai overview section renders"""
+        at = AppTest.from_function(display_todo_page)
+        at.run(timeout=15)
+
+        self.assertEqual(at.button[1].label, "generate overview")
+        subheaders = [sh.value for sh in at.subheader]
+        self.assertIn("AI tasks overview", subheaders)
+
 if __name__ == "__main__":
     unittest.main()
