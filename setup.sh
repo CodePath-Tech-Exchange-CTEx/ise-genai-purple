@@ -1,9 +1,9 @@
 ### VARIABLES TO CHANGE - START
-PROJECT_ID=
-PROJECT_NUMBER=
-SERVICE_NAME=
-GITHUB_ORG=
-GITHUB_REPO=
+PROJECT_ID=oluwaremilekun-adeshina-fisk
+PROJECT_NUMBER=1077300583091
+SERVICE_NAME=ise-genai-purple
+GITHUB_ORG=CodePath-Tech-Exchange-CTEx
+GITHUB_REPO=ise-genai-purple
 ### VARIABLES TO CHANGE - END
 
 # ----------- Set Up GCP Project ----------- #
