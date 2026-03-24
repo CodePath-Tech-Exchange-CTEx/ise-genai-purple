@@ -2,7 +2,11 @@ from google.cloud import bigquery
 
 # Initialize the BigQuery client
 # Assumes GOOGLE_APPLICATION_CREDENTIALS environment variable is set locally
-client = bigquery.Client()
+def get_client():
+    """Returns a BigQuery client."""
+    return bigquery.Client()
+
+    
 
 def update_reminder(reminder, new_dt, new_repeated, new_interval):
     """
@@ -27,7 +31,7 @@ def update_reminder(reminder, new_dt, new_repeated, new_interval):
     )
 
     # Execute the query and wait for the result to confirm completion
-    client.query(query, job_config=job_config).result()
+    get_client().query(query, job_config=job_config).result()
 
 def delete_reminder(rtitle):
     """
@@ -44,7 +48,7 @@ def delete_reminder(rtitle):
         ]
     )
 
-    client.query(query, job_config=job_config).result()
+    get_client().query(query, job_config=job_config).result()
 
 def add_notification(data):
     """
@@ -66,7 +70,7 @@ def add_notification(data):
         ]
     )
 
-    client.query(query, job_config=job_config).result()
+    get_client().query(query, job_config=job_config).result()
 
 def get_notifications():
     """
@@ -78,7 +82,7 @@ def get_notifications():
     FROM `joshua-stevenson-hu.team_purple_dataset.notification_table`
     """
 
-    results = client.query(query).result()
+    results = get_client().query(query).result()
     notifications = []
     
     # Map BigQuery Row objects to standard Python dictionaries
@@ -114,7 +118,7 @@ def get_item_data(i_title, i_type):
             bigquery.ScalarQueryParameter("title", "STRING", i_title)
         ])
 
-        results = client.query(query, job_config=job_config).result()
+        results = get_client().query(query, job_config=job_config).result()
         if results.total_rows == 0:
             return None
         
@@ -135,7 +139,7 @@ def get_item_data(i_title, i_type):
             bigquery.ScalarQueryParameter("title", "STRING", i_title)
         ])
 
-        results = client.query(query, job_config=job_config).result()
+        results = get_client().query(query, job_config=job_config).result()
         if results.total_rows == 0:
             return None
         
