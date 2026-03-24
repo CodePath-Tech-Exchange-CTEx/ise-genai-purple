@@ -5,13 +5,17 @@ def display_todo_page():
     import time
     import vertexai
     from vertexai.generative_models import GenerativeModel
+    
     st.title("to-do")
-    client = bigquery.Client()
+    client = bigquery.Client(project="project-6e90bd07-d669-4de8-930")
     query = "SELECT * FROM `joshua-stevenson-hu.team_purple_dataset.tasks_table`"
+    
     try:
         tasks_list = client.query(query).to_dataframe().to_dict('records')
     except Exception as e:
         tasks_list = []
+        # THIS WILL SHOW US EXACTLY WHY IT IS FAILING!
+        st.error(f"BigQuery Error: {e}")
 
     #write task
     st.subheader("add a new task!")
@@ -35,10 +39,12 @@ def display_todo_page():
                 VALUES 
                 ('{new_task}', {unique_id}, '{new_category}', '{new_date}', '{new_date}', False)
             """
-            client.query(insert_query).result()
-            
-            st.success("task added!")
-            st.rerun() 
+            try:
+                client.query(insert_query).result()
+                st.success("task added!")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Failed to add task: {e}")
 
     st.divider()
 
@@ -66,17 +72,15 @@ def display_todo_page():
                     Also provide quick tips to stay focused/productive. 
                     Keep the response short.
                     """
-
-                    #call vertex ai
-                    vertexai.init()
+                    #vertexai
+                    vertexai.init(project="project-6e90bd07-d669-4de8-930")
                     model = GenerativeModel("gemini-2.5-flash-lite")
                     response = model.generate_content(prompt)
 
                     #output response
                     st.info(response.text)
                 except Exception as e:
-                    st.error(f"couldn't generate the overview: {e}")
-                    
+                    st.error(f"couldn't generate the overview: {e}")               
     st.divider()
 
     col_school, col_work, col_life, col_urgent = st.columns(4)
