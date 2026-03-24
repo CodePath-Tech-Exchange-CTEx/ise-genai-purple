@@ -2,3 +2,5 @@ streamlit
 streamlit-calendar
 pytest
 google-cloud-bigquery
+plotly
+vertexai
