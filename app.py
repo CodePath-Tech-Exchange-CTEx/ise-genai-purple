@@ -2,6 +2,7 @@ import streamlit as st
 from pages.calendar import display_calendar_page
 from database.events import create_events_table
 from pages.analyser import display_app_page as display_analyser_page
+from pages.reminder import display_reminder_page
 
 create_events_table()
 
@@ -13,8 +14,9 @@ def display_app_page():
     )
     calendar_page = st.Page(display_calendar_page, title="Calendar", icon=":material/calendar_month:")
     analyser_page = st.Page(display_analyser_page, title="Time Analyser", icon=":material/analytics:")
+    reminder_page = st.Page(display_reminder_page, title="Reminders", icon=":material/alarm:")
+    pg = st.navigation([calendar_page, analyser_page, reminder_page], position="top")
 
-    pg = st.navigation([calendar_page, analyser_page], position="top")
     pg.run()
 
 
