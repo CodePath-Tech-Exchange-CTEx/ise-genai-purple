@@ -1,35 +1,15 @@
-#############################################################################
-# app.py
-#
-# This file contains the entrypoint for the app.
-#
-#############################################################################
-
-import streamlit as st
-from modules import display_my_custom_component, display_post, display_genai_advice, display_activity_summary, display_recent_workouts
-from data_fetcher import get_user_posts, get_genai_advice, get_user_profile, get_user_sensor_data, get_user_workouts
-
-userId = 'user1'
-
-
-def display_app_page():
-    """Displays the home page of the app."""
-    st.title('Welcome to SDS!')
-
-    # An example of displaying a custom component called "my_custom_component"
-    value = st.text_input('Enter your name')
-    display_my_custom_component(value)
-
-
-# This is the starting point for your app. You do not need to change these lines
 def display_todo_page():
     """displays the todo list page of the app."""
     import streamlit as st
+    from google.cloud import bigquery
+    import time
     st.title("to-do")
-
-    #list to hold tasks
-    if "tasks" not in st.session_state:
-        st.session_state.tasks = []
+    client = bigquery.Client()
+    query = "SELECT * FROM `joshua-stevenson-hu.team_purple_dataset.tasks_table`"
+    try:
+        tasks_list = client.query(query).to_dataframe().to_dict('records')
+    except Exception as e:
+        tasks_list = []
 
     #write task
     st.subheader("add a new task!")
@@ -45,11 +25,16 @@ def display_todo_page():
     # button to add task
     if st.button("add task"):
         if new_task: 
-            st.session_state.tasks.append({
-                "category": new_category, 
-                "date": new_date, 
-                "task": new_task
-            })
+            unique_id = int(time.time()) 
+            
+            insert_query = f"""
+                INSERT INTO `joshua-stevenson-hu.team_purple_dataset.tasks_table` 
+                (name_of_task, task_id, category, start_date, due_date, completion)
+                VALUES 
+                ('{new_task}', {unique_id}, '{new_category}', '{new_date}', '{new_date}', False)
+            """
+            client.query(insert_query).result()
+            
             st.success("task added!")
             st.rerun() 
 
@@ -58,27 +43,26 @@ def display_todo_page():
 
     with col_school:
         st.subheader(":blue[SCHOOL]")
-        for t in st.session_state.tasks:
+        for t in tasks_list:
             if t["category"] == "school":
-                st.checkbox(f"{t['task']} ({t['date'].strftime('%m/%d')})", key=t['task']+'school')
+                st.checkbox(f"{t['name_of_task']} ({t['due_date']})", key=str(t['task_id'])+'school')
 
     with col_work:
         st.subheader(":green[WORK]")
-        for t in st.session_state.tasks:
+        for t in tasks_list:
             if t["category"] == "work":
-                st.checkbox(f"{t['task']} ({t['date'].strftime('%m/%d')})", key=t['task']+'work')
+                st.checkbox(f"{t['name_of_task']} ({t['due_date']})", key=str(t['task_id'])+'work')
 
     with col_life:
         st.subheader(":orange[LIFE]")
-        for t in st.session_state.tasks:
+        for t in tasks_list:
             if t["category"] == "life":
-                st.checkbox(f"{t['task']} ({t['date'].strftime('%m/%d')})", key=t['task']+'life')
+                st.checkbox(f"{t['name_of_task']} ({t['due_date']})", key=str(t['task_id'])+'life')
 
     with col_urgent:
         st.subheader(":red[URGENT 🕒]")
-        for t in st.session_state.tasks:
+        for t in tasks_list:
             if t["category"] == "urgent 🕒":
-                st.checkbox(f"{t['task']} ({t['date'].strftime('%m/%d')})", key=t['task']+'urgent')
-
-if __name__ == '__main__':
+                st.checkbox(f"{t['name_of_task']} ({t['due_date']})", key=str(t['task_id'])+'urgent')
+if __name__ == "__main__":
     display_todo_page()

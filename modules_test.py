@@ -53,11 +53,23 @@ class TestDisplayTodoPage(unittest.TestCase):
         at.run()
         self.assertEqual(at.title[0].value, "to-do")
 
-    def test_todo_initial_state(self):
-        """checks the task list so that it start empty"""
+    def test_todo_ui_elements(self):
+        """checks that the input widgets and button render correctly"""
         at = AppTest.from_function(display_todo_page)
         at.run()
-        self.assertEqual(at.session_state["tasks"], [])
+        self.assertEqual(at.selectbox[0].label, "category")
+        self.assertEqual(at.text_input[0].label, "new task......")
+        self.assertEqual(at.button[0].label, "add task")
+
+    def test_todo_columns(self):
+        """checks that the four category columns render"""
+        at = AppTest.from_function(display_todo_page)
+        at.run()
+        subheaders = [sh.value for sh in at.subheader]
+        self.assertIn(":blue[SCHOOL]", subheaders)
+        self.assertIn(":green[WORK]", subheaders)
+        self.assertIn(":orange[LIFE]", subheaders)
+        self.assertIn(":red[URGENT 🕒]", subheaders)
 
 if __name__ == "__main__":
     unittest.main()
