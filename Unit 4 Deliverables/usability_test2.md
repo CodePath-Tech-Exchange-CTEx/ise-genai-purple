@@ -24,9 +24,9 @@
 - What could be improved?
   - "Each page is a little bit crowded with buttons and input fields. You should spread them out and make each button label have bold lettering so it's clear what the buttons are." 
 # Results
-- The pages were crowded with information
-  - There might be too much information in a tiny area
-  - We should put space in between each element 
-- The user couldn't find the log in button
-  - The buttons blended a bit with everything else on the page
-  - We should add background colors to the most important buttons like the log in button and make the text stand out more for the button labels 
+- The pages were crowded with information - "Each page is a little bit crowded with buttons and input fields"
+  - Hypothesis: There might be too much information in a tiny area 
+  - Fix: We should put space in between each element 
+- The user couldn't find the log in button - I didn't see the log in button on the second attempt so I wasn't sure how to proceed"
+  - Hypothesis: The buttons blended a bit with everything else on the page
+  - Fix: We should add background colors to the most important buttons like the log in button and make the text stand out more for the button labels 
