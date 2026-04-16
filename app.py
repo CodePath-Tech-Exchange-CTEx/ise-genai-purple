@@ -15,7 +15,7 @@ def display_app_page():
     reminder_page = st.Page(display_reminder_page, title="Reminders", icon=":material/alarm:")
     todo_page = st.Page(display_todo_page, title="Todo", icon=":material/alarm:")
     
-    pg = st.navigation([calendar_page, analyser_page, reminder_page, todo_page], position="top")
+    pg = st.navigation([calendar_page, todo_page, analyser_page, reminder_page], position="top")
 
     pg.run()
 

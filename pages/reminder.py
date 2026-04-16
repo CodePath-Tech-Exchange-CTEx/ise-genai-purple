@@ -97,8 +97,24 @@ def load_reminders():
     """
     reminders = get_notifications()
 
+    info_message = "Add Some Reminders"
+
+    if st.session_state.choose_item_type == "Event":
+        reminders = [r for r in reminders if r.get("type") == "Event"]
+        info_message = "Add Some Event Reminders"
+    elif st.session_state.choose_item_type == "Task":
+        info_message = "Add Some Task Reminders"
+        reminders = [r for r in reminders if r.get("type") == "Task"]
+
+    if st.session_state.sort_by == "Date":
+        reminders.sort(key=lambda x: x.get("date_time", datetime.max))
+    elif st.session_state.sort_by == "A to Z":
+        reminders.sort(key=lambda x: x.get("title", "").lower())
+
+
+
     if not reminders:
-        st.info("Add some reminders") 
+        st.info(info_message) 
         return
 
     # Use a column layout to center-align the cards slightly
@@ -157,6 +173,8 @@ def add_reminder():
     Interface for creating a new reminder record. 
     Cross-references existing tasks/events in BigQuery via get_item_data.
     """
+    st.write("*Choose an existing Event or Task to add a reminder for*")
+    
     new_reminder = {
         "title": "",
         "type": None,
@@ -226,14 +244,20 @@ def display_reminder_page():
         # Top controls for sorting
         col1, _ = st.columns([1.3, 2], vertical_alignment="bottom", gap="xsmall")
         with col1:
-            st.selectbox(f"Sort By:", ("Date", "Priority", "A to Z"), key="sort_by")
+            st.selectbox("Sort By:", ("Date", "A to Z", "Events", "Tasks"), key="sort_by", placeholder="Date")
 
         # Main call-to-action button
         button_col1, _, _ = st.columns([.6, .7, 2], gap="xsmall")
         with button_col1:
             st.button("Add Reminder", key="add_reminder", on_click=add_reminder, width="stretch")
     
+        pill_select, _ = st.columns([1, 2], gap="xsmall")
+        with pill_select:
+            st.pills("", ["All", "Event", "Task"], default="All", key="choose_item_type")
+
     st.divider()
+    
+    
     load_reminders()
 
 if __name__ == "__main__":
