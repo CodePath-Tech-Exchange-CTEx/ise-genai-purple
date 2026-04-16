@@ -6,6 +6,9 @@ from pages.todo import display_todo_page
 from pages.login import display_login_page
 from pages.signup import display_signup_page
 from components.user_bar import render_user_bar
+from helper.auto_login import try_cookie_login
+from streamlit_cookies_manager import EncryptedCookieManager
+
 
 def display_app_page():
     """Displays the different pages of the app."""
@@ -13,6 +16,15 @@ def display_app_page():
         page_title="Productivity App",
         page_icon="📅",
     )
+
+    cookies = EncryptedCookieManager(
+        prefix="productivity_app/",
+        password="productivity_app_cookies",
+    )
+
+    if not cookies.ready():
+        st.write("Loading session...")
+        st.stop()
 
     st.set_option("client.showSidebarNavigation", False)
 
@@ -29,12 +41,14 @@ def display_app_page():
     if "auth_view" not in st.session_state:
         st.session_state.auth_view = "login"
 
+    try_cookie_login(cookies)
+
     # Not logged in: render auth screens directly
     if not st.session_state.authenticated:
         if st.session_state.auth_view == "login":
-            display_login_page()
+            display_login_page(cookies)
         else:
-            display_signup_page()
+            display_signup_page(cookies)
         return
 
     # Logged in: show actual app navigation
@@ -43,7 +57,7 @@ def display_app_page():
     reminder_page = st.Page(display_reminder_page, title="Reminders", icon=":material/alarm:")
     todo_page = st.Page(display_todo_page, title="Todo", icon=":material/check_circle:")
 
-    render_user_bar()
+    render_user_bar(cookies)
 
     pg = st.navigation(
         [calendar_page, analyser_page, reminder_page, todo_page],

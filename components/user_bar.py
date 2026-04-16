@@ -1,6 +1,9 @@
 import streamlit as st
+from helper.cookies import COOKIE_NAME
+from helper.auth_persistence import delete_remember_token
 
-def render_user_bar():
+
+def render_user_bar(cookies):
     user = st.session_state.current_user
     display_name = user["name"].strip() if user and user.get("name") else "User"
     avatar_letter = display_name[0].upper()
@@ -64,6 +67,13 @@ def render_user_bar():
             type="tertiary",
             width="content",
         ):
+            if cookies.ready():
+                raw_token = cookies.get(COOKIE_NAME)
+
+                if raw_token:
+                    delete_remember_token(raw_token)
+                    del cookies[COOKIE_NAME]
+                    cookies.save()
             st.session_state.authenticated = False
             st.session_state.current_user = None
             st.session_state.auth_view = "login"

@@ -1,9 +1,10 @@
 import streamlit as st
 from helper.constants import auth_styles
-from helper.utils import create_user
+from helper.user_utils import create_user, set_user
 import time
+from helper.cookies import set_cookies
 
-def display_signup_page():
+def display_signup_page(cookies):
     auth_styles()
 
     st.set_page_config(page_title="Sign Up", layout="centered")
@@ -38,8 +39,8 @@ def display_signup_page():
                 success, message, user = create_user(name, username, password)
 
             if success:
-                st.session_state.authenticated = True
-                st.session_state.current_user = user
+                set_user(user)
+                set_cookies(cookies, user, False)
                 st.session_state.show_signup_toast = True
                 st.rerun()
             else:

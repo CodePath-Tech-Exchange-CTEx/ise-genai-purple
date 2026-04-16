@@ -1,9 +1,12 @@
 import streamlit as st
 from helper.constants import auth_styles
-from helper.utils import login_user
+from helper.user_utils import login_user, set_user
 import time
+from helper.auth_persistence import create_remember_token
+from helper.cookies import set_cookies
 
-def display_login_page():
+
+def display_login_page(cookies):
     auth_styles()
 
     st.set_page_config(page_title="Login", layout="centered")
@@ -48,8 +51,8 @@ def display_login_page():
             success, message, user = login_user(username, password)
 
         if success:
-            st.session_state.authenticated = True
-            st.session_state.current_user = user
+            set_user(user)
+            set_cookies(cookies, user, remember_me)
             st.rerun()
         else:
             st.error(message)
