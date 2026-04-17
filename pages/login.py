@@ -9,7 +9,6 @@ from helper.cookies import set_cookies
 def display_login_page(cookies):
     auth_styles()
 
-    st.title("Login")
     st.markdown('<div class="app-title">Welcome to Productivity App</div>', unsafe_allow_html=True)
 
     with st.form("login_form"):
