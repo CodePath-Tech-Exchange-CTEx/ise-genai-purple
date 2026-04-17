@@ -13,7 +13,7 @@ from vertexai.generative_models import GenerativeModel
 def get_client():
     return bigquery.Client()
 TABLE = "joshua-stevenson-hu.team_purple_dataset.analyser_table"
-PROJECT_ID = "joshua-stevenson-hu"
+PROJECT_ID = "oluwaremilekun-adeshina-fisk""
 REGION = "us-central1"
 
 users = {
