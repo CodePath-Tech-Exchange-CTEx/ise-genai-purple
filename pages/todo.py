@@ -9,7 +9,7 @@ def display_todo_page():
     st.title("to-do")
     client = None
     try:
-        client = bigquery.Client(project="project-6e90bd07-d669-4de8-930")
+        client = bigquery.Client(project="oluwaremilekun-adeshina-fisk")
         query = "SELECT * FROM `joshua-stevenson-hu.team_purple_dataset.tasks_table`"
         tasks_list = client.query(query).to_dataframe().to_dict('records')
     except Exception as e:
