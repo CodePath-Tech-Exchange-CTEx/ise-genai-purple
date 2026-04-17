@@ -95,7 +95,9 @@ def load_reminders():
     """
     Fetches latest data from BigQuery and renders reminder 'cards' in a vertical list.
     """
-    reminders = get_notifications()
+    reminders = []
+    with st.spinner("Loading reminders..."):
+        reminders = get_notifications()
 
     info_message = "Add Some Reminders"
 
@@ -193,8 +195,9 @@ def add_reminder():
     new_reminder["title"] = st.text_input("Title of the item:", placeholder="Preexisting event or task")
     
     # Validation check: Ensure the event actually exists in the separate events/tasks table
-    if new_reminder["title"]:
-        item_name = get_item_data(new_reminder["title"], new_reminder["type"])
+    with st.spinner("Retrieving Item"):
+        if new_reminder["title"]:
+            item_name = get_item_data(new_reminder["title"], new_reminder["type"])
 
     new_reminder["date_time"] = st.datetime_input("Notify me at:", format="MM/DD/YYYY")
     new_reminder["repeat"] = True if st.pills("Repeat", ["Yes", "No"]) == "Yes" else False
