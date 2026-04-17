@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 vertexai.init(
-    project="ikechukwu-mgbemele-fisk",
+    project="oluwaremilekun-adeshina-fisk",
     location="us-central1"
 )
 
