@@ -4,6 +4,7 @@ import uuid
 import binascii
 import os
 import hashlib
+from helper.calendar_utils import get_client
 
 def hash_password(password: str):
     salt = os.urandom(16)

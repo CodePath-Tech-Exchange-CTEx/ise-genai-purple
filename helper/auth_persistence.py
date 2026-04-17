@@ -2,12 +2,8 @@ import uuid
 import secrets
 import hashlib
 from datetime import datetime, timedelta, timezone
+from helper.calendar_utils import get_client
 from google.cloud import bigquery
-
-
-def get_client():
-    return bigquery.Client()
-
 
 def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()

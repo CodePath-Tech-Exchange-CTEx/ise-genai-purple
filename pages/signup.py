@@ -7,7 +7,7 @@ from helper.cookies import set_cookies
 def display_signup_page(cookies):
     auth_styles()
 
-    st.set_page_config(page_title="Sign Up", layout="centered")
+    st.title("Sign Up")
     st.markdown('<div class="app-title">Sign Up</div>', unsafe_allow_html=True)
 
     with st.form("signup_form"):
