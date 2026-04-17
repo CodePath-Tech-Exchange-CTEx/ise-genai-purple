@@ -25,7 +25,6 @@ Rules:
   "end_time": "HH:MM"
 }
 - If duration is given, compute end time.
-- Assume timezone America/Chicago.
 - Keep titles short and clean.
 """
 
