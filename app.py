@@ -5,6 +5,7 @@ from pages.reminder import display_reminder_page
 from pages.todo import display_todo_page
 from pages.login import display_login_page
 from pages.signup import display_signup_page
+from pages.recovery import display_recovery_page
 from components.user_bar import render_user_bar
 
 def display_app_page():
@@ -33,8 +34,10 @@ def display_app_page():
     if not st.session_state.authenticated:
         if st.session_state.auth_view == "login":
             display_login_page()
-        else:
+        elif st.session_state.auth_view == "signup":
             display_signup_page()
+        elif st.session_state.auth_view == "recovery":
+            display_recovery_page()
         return
 
     # Logged in: show actual app navigation

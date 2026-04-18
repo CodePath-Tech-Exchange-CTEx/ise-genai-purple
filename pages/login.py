@@ -3,6 +3,8 @@ from helper.constants import auth_styles
 from helper.utils import login_user
 import time
 
+
+
 def display_login_page():
     auth_styles()
 
@@ -24,11 +26,6 @@ def display_login_page():
         with col1:
             remember_me = st.checkbox("Remember me")
 
-        with col2:
-            st.markdown(
-                '<div class="forgot-wrapper"><span class="forgot-link">Forgot password?</span></div>',
-                unsafe_allow_html=True,
-            )
 
         c1, c2, c3 = st.columns([1, 2, 1])
         with c2:
@@ -39,9 +36,12 @@ def display_login_page():
         unsafe_allow_html=True
     )
 
-    c1, c2, c3 = st.columns([1, 2, 1])
-    with c2:
+    c1, c2, c3 = st.columns([1.4, 1, 1.4])
+    with c1:
         go_signup = st.button("Create account", use_container_width=True)
+    with c3:
+        go_recovery = st.button("Forgot password?", use_container_width=True)
+
 
     if submit:
         with st.spinner("Logging in..."):
@@ -56,4 +56,7 @@ def display_login_page():
 
     if go_signup:
         st.session_state.auth_view = "signup"
+        st.rerun()
+    if go_recovery:
+        st.session_state.auth_view = "recovery"
         st.rerun()
