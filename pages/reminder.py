@@ -100,7 +100,7 @@ def load_reminders():
         reminders = get_notifications(st.session_state.current_user["username"])
 
     info_message = "Add Some Reminders"
-
+    
     if st.session_state.choose_item_type == "Event":
         reminders = [r for r in reminders if r.get("type") == "Event"]
         info_message = "Add Some Event Reminders"
