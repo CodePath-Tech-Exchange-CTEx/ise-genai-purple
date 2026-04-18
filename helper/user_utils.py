@@ -134,3 +134,65 @@ def login_user(username: str, password: str):
 def set_user(user):
     st.session_state.authenticated = True
     st.session_state.current_user = user
+
+def get_user_info(username: str):
+    
+    query = """
+    SELECT id, name
+    FROM `joshua-stevenson-hu.team_purple_dataset.users_table`
+    WHERE username = @username
+    """
+
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("username", "STRING", username),
+        ]
+    )
+
+    rows = list(get_client().query(query, job_config=job_config).result())
+    return rows
+
+def update_password(username: str, password: str):
+    username = username.strip().lower()
+    password = password.strip()
+
+    if not username or not password:
+        return False, "All fields are required.", None
+
+    try:
+        rows = get_user_info(username)
+        if len(rows) == 0:
+            return False, "Username doesn't exist. Create a new account.", None
+        user_id = rows[0].id
+        name = rows[0].name
+
+        salt, password_hash = hash_password(password)
+
+        query = """
+        INSERT INTO `joshua-stevenson-hu.team_purple_dataset.users_table`
+        (id, name, username, password_salt, password_hash)
+        VALUES (@id, @name, @username, @password_salt, @password_hash)
+        """
+
+        job_config = bigquery.QueryJobConfig(
+            query_parameters=[
+                bigquery.ScalarQueryParameter("id", "STRING", user_id),
+                bigquery.ScalarQueryParameter("name", "STRING", name),
+                bigquery.ScalarQueryParameter("username", "STRING", username),
+                bigquery.ScalarQueryParameter("password_salt", "STRING", salt),
+                bigquery.ScalarQueryParameter("password_hash", "STRING", password_hash),
+            ]
+        )
+
+        get_client().query(query, job_config=job_config).result()
+
+        user = {
+            "id": user_id,
+            "name": name,
+            "username": username,
+        }
+        return True, "Password updated successfully.", user
+
+    except Exception as e:
+        print(e)
+        return False, "Something went wrong while creating the account.", None

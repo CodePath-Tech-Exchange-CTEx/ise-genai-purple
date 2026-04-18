@@ -1,6 +1,6 @@
 import streamlit as st
 from helper.constants import auth_styles
-from helper.utils import update_password
+from helper.user_utils import update_password
 import time
 
 def display_recovery_page():

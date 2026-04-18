@@ -89,7 +89,7 @@ def test_add_event_to_table_invalid_does_not_query(monkeypatch):
     start = datetime(2026, 2, 21, 12, 0)
     end = datetime(2026, 2, 21, 11, 0)
 
-    ok, err = calendar_utils.add_event_to_table("Bad event", start, end, "test_user")
+    ok, err = calendar_utils.add_event_to_table("Bad event", start, end)
 
     assert ok is False
     assert err == "End must be after start."
@@ -104,7 +104,7 @@ def test_add_event_to_table_valid_runs_insert_query(monkeypatch):
     start = datetime(2026, 2, 21, 10, 0)
     end = datetime(2026, 2, 21, 11, 0)
 
-    ok, err = calendar_utils.add_event_to_table("Study block", start, end, "test_user")
+    ok, err = calendar_utils.add_event_to_table("Study block", start, end)
 
     assert ok is True
     assert err == "Event added."
@@ -123,7 +123,7 @@ def test_update_event_in_table_invalid_does_not_query(monkeypatch):
     start = datetime(2026, 2, 21, 14, 0)
     end = datetime(2026, 2, 21, 13, 0)
 
-    ok, err = calendar_utils.update_event_in_table("evt_123", "Bad update", start, end, "test_user")
+    ok, err = calendar_utils.update_event_in_table("evt_123", "Bad update", start, end)
 
     assert ok is False
     assert err == "End must be after start."
@@ -138,7 +138,7 @@ def test_update_event_in_table_valid_runs_update_query(monkeypatch):
     start = datetime(2026, 2, 21, 15, 0)
     end = datetime(2026, 2, 21, 16, 0)
 
-    ok, err = calendar_utils.update_event_in_table("evt_123", "Updated event", start, end, "test_user")
+    ok, err = calendar_utils.update_event_in_table("evt_123", "Updated event", start, end)
 
     assert ok is True
     assert err == "Event updated."
@@ -147,7 +147,7 @@ def test_update_event_in_table_valid_runs_update_query(monkeypatch):
     assert "events_table" in fake_client.last_query
     assert "WHERE id = @id" in fake_client.last_query
     assert fake_client.last_job_config is not None
-    assert len(fake_client.last_job_config.query_parameters) == 5
+    assert len(fake_client.last_job_config.query_parameters) == 4
 
 
 def test_turn_to_right_format_converts_rows():
