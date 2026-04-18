@@ -256,7 +256,7 @@ def display_reminder_page():
     
         pill_select, _ = st.columns([1, 2], gap="xsmall")
         with pill_select:
-            st.pills("", ["All", "Event", "Task"], default="All", key="choose_item_type")
+            st.pills("View", ["All", "Event", "Task"], default="All", key="choose_item_type")
 
     st.divider()
     
