@@ -11,14 +11,14 @@ def get_client():
     return bigquery.Client()
 
 
-def add_event_to_table(title: str, start_dt: datetime, end_dt: datetime):
+def add_event_to_table(title: str, start_dt: datetime, end_dt: datetime, user: str):
     if end_dt <= start_dt:
         return False, "End must be after start."
 
     query = """
     INSERT INTO `joshua-stevenson-hu.team_purple_dataset.events_table`
-    (id, title, start_date_time, end_date_time)
-    VALUES (@id, @title, @start_dt, @end_dt)
+    (id, title, start_date_time, end_date_time, username)
+    VALUES (@id, @title, @start_dt, @end_dt, @username)
     """
 
     job_config = bigquery.QueryJobConfig(
@@ -27,6 +27,7 @@ def add_event_to_table(title: str, start_dt: datetime, end_dt: datetime):
             bigquery.ScalarQueryParameter("title", "STRING", title),
             bigquery.ScalarQueryParameter("start_dt", "DATETIME", start_dt),
             bigquery.ScalarQueryParameter("end_dt", "DATETIME", end_dt),
+            bigquery.ScalarQueryParameter("username", "STRING", user),
         ]
     )
 
@@ -34,7 +35,7 @@ def add_event_to_table(title: str, start_dt: datetime, end_dt: datetime):
     return True, "Event added."
 
 
-def update_event_in_table(event_id: str, title: str, start_dt: datetime, end_dt: datetime):
+def update_event_in_table(event_id: str, title: str, start_dt: datetime, end_dt: datetime, user: str):
     if end_dt <= start_dt:
         return False, "End must be after start."
 
@@ -44,6 +45,7 @@ def update_event_in_table(event_id: str, title: str, start_dt: datetime, end_dt:
         start_date_time = @start_dt,
         end_date_time = @end_dt
     WHERE id = @id
+    AND username = @username
     """
 
     job_config = bigquery.QueryJobConfig(
@@ -52,6 +54,7 @@ def update_event_in_table(event_id: str, title: str, start_dt: datetime, end_dt:
             bigquery.ScalarQueryParameter("title", "STRING", title),
             bigquery.ScalarQueryParameter("start_dt", "DATETIME", start_dt),
             bigquery.ScalarQueryParameter("end_dt", "DATETIME", end_dt),
+            bigquery.ScalarQueryParameter("username", "STRING", user),
         ]
     )
 
@@ -92,10 +95,10 @@ def event_dialog(event_data=None):
             with st.spinner("Updating event..." if is_edit else "Saving event..."):
                 if is_edit:
                     success, message = update_event_in_table(
-                        event_data["id"], title, start_dt, end_dt
+                        event_data["id"], title, start_dt, end_dt, st.session_state.current_user["username"]
                     )
                 else:
-                    success, message = add_event_to_table(title, start_dt, end_dt)
+                    success, message = add_event_to_table(title, start_dt, end_dt, st.session_state.current_user["username"])
 
             if success:
                 st.toast(f"Event {'updated' if is_edit else 'saved'} successfully 🎉")
@@ -128,12 +131,20 @@ def turn_to_right_format(query_events):
     return events
 
 
-def get_calendar_events():
+def get_calendar_events(user):
     query = """
     SELECT id, title, start_date_time, end_date_time
     FROM `joshua-stevenson-hu.team_purple_dataset.events_table`
+    WHERE username = @username
     """
-    query_events = get_client().query(query).result()
+
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("username", "STRING", user),
+        ]
+    )
+
+    query_events = get_client().query(query, job_config=job_config).result()
     return turn_to_right_format(query_events)
 
 def hash_password(password: str):

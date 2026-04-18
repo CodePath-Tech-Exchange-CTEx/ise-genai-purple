@@ -64,7 +64,7 @@ def edit_reminder(reminder):
     with del_col:
         # Delete action: uses unique key to prevent widget collision
         if st.button("Delete", key=f"del_{reminder['title']}"):
-            delete_reminder(reminder['title'])
+            delete_reminder(reminder['title'], st.session_state.current_user["username"])
             st.toast("Deleted!")
             st.rerun() # Closes dialog and refreshes main list
             
@@ -84,7 +84,7 @@ def edit_reminder(reminder):
                 st.error(e)
         else:
             # Push updates to BigQuery helper
-            update_reminder(reminder, new_dt, new_repeated, new_interval)
+            update_reminder(reminder, new_dt, new_repeated, new_interval, st.session_state.current_user["username"])
             st.toast("Reminder edited successfully!")
             st.rerun() 
 
@@ -97,7 +97,7 @@ def load_reminders():
     """
     reminders = []
     with st.spinner("Loading reminders..."):
-        reminders = get_notifications()
+        reminders = get_notifications(st.session_state.current_user["username"])
 
     info_message = "Add Some Reminders"
 
@@ -113,8 +113,7 @@ def load_reminders():
     elif st.session_state.sort_by == "A to Z":
         reminders.sort(key=lambda x: x.get("title", "").lower())
 
-
-
+    
     if not reminders:
         st.info(info_message) 
         return
@@ -123,6 +122,7 @@ def load_reminders():
     right, _ = st.columns([3, 1], vertical_alignment="center")
     
     with right:
+
         for idx, reminder in enumerate(reminders):
             # Outer container for the reminder "card"
             with st.container(border=True): 
@@ -197,7 +197,7 @@ def add_reminder():
     # Validation check: Ensure the event actually exists in the separate events/tasks table
     with st.spinner("Retrieving Item"):
         if new_reminder["title"]:
-            item_name = get_item_data(new_reminder["title"], new_reminder["type"])
+            item_name = get_item_data(new_reminder["title"], new_reminder["type"], st.session_state.current_user["username"])
 
     new_reminder["date_time"] = st.datetime_input("Notify me at:", format="MM/DD/YYYY")
     new_reminder["repeat"] = True if st.pills("Repeat", ["Yes", "No"]) == "Yes" else False
@@ -232,7 +232,7 @@ def add_reminder():
         else:
             # Overwrite user input with the "Official" name found in BigQuery
             new_reminder["title"] = item_name
-            add_notification(new_reminder)
+            add_notification(new_reminder, st.session_state.current_user["username"])
             st.toast("Reminder added successfully!")
             st.rerun()
 
