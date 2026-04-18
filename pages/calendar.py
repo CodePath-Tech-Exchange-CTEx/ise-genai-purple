@@ -9,7 +9,7 @@
 import streamlit as st
 from helper.constants import calendar_options, custom_css
 from streamlit_calendar import calendar
-from helper.utils import add_event_button, get_calendar_events, event_dialog
+from helper.calendar_utils import add_event_button, get_calendar_events, event_dialog
 
 
 def display_calendar_page():
