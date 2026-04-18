@@ -38,6 +38,7 @@ def auth_styles():
     .block-container {
         max-width: 550px;
         margin-top: 150px;
+        margin-bottom: 150px;
         margin-left: auto;
         margin-right: auto;
         padding: 3rem 3rem 2.5rem 3rem;
