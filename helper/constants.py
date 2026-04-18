@@ -33,45 +33,65 @@ custom_css="""
 """
 
 def auth_styles():
-    st.markdown(
-        """
-        <style>
-        .block-container {
-            max-width: 550px;
-            margin-top: 100px;
-            margin-bottom: 100px;
-            margin-left: auto;
-            margin-right: auto;
-            padding: 3rem 3rem 2.5rem 3rem;
-            background: white;
-            border-radius: 18px;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
-        }
+    st.markdown("""
+    <style>
+    .block-container {
+        max-width: 550px;
+        margin-top: 150px;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 3rem 3rem 2.5rem 3rem;
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+    }
 
-        .app-title {
-            text-align: center;
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 2rem;
-        }
+    .app-title {
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        color: #111827;
+    }
 
-        .forgot-link, .create-link, .login-link {
-            text-decoration: none;
-            color: #1f77b4;
-            font-size: 0.95rem;
-        }
+    .forgot-link, .create-link, .login-link {
+        text-decoration: none;
+        color: #1f77b4;
+        font-size: 0.95rem;
+    }
 
-        .forgot-wrapper {
-            text-align: right;
-            padding-top: 0.45rem;
-        }
+    .forgot-wrapper {
+        text-align: right;
+        padding-top: 0.45rem;
+    }
 
-        .bottom-link {
-            text-align: center;
-            margin-top: 1rem;
-            font-size: 0.95rem;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    .create-account, .bottom-link {
+        text-align: center;
+        margin-top: 1rem;
+        font-size: 0.95rem;
+        color: #374151;
+    }
+
+    /* labels */
+    div[data-testid="stTextInput"] label,
+    div[data-testid="stCheckbox"] label {
+        color: #111827 !important;
+        font-weight: 500;
+    }
+
+    /* input text */
+    div[data-testid="stTextInput"] input {
+        color: white !important;
+    }
+
+    /* placeholder text */
+    div[data-testid="stTextInput"] input::placeholder {
+        color: #d1d5db !important;
+    }
+
+    /* checkbox text */
+    div[data-testid="stCheckbox"] p {
+        color: #111827 !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
