@@ -8,7 +8,7 @@ def get_client():
 
     
 
-def update_reminder(reminder, new_dt, new_repeated, new_interval):
+def update_reminder(reminder, new_dt, new_repeated, new_interval, user):
     """
     Updates an existing notification record in BigQuery.
     Identifies the record by its title.
@@ -19,6 +19,7 @@ def update_reminder(reminder, new_dt, new_repeated, new_interval):
         is_repeated = @is_repeated,
         repeat_interval = @repeat_interval
     WHERE title = @title
+    AND username = @username
     """ 
     # Use ScalarQueryParameter to safely handle data types and prevent SQL injection
     job_config = bigquery.QueryJobConfig(
@@ -27,37 +28,40 @@ def update_reminder(reminder, new_dt, new_repeated, new_interval):
             bigquery.ScalarQueryParameter("date_time", "DATETIME", new_dt),
             bigquery.ScalarQueryParameter("is_repeated", "BOOL", new_repeated),
             bigquery.ScalarQueryParameter("repeat_interval", "INTEGER", new_interval),
+            bigquery.ScalarQueryParameter("username", "STRING", user)
         ]
     )
 
     # Execute the query and wait for the result to confirm completion
     get_client().query(query, job_config=job_config).result()
 
-def delete_reminder(rtitle):
+def delete_reminder(rtitle, user):
     """
     Removes a notification from the table based on the title.
     """
     query = """
     DELETE FROM `joshua-stevenson-hu.team_purple_dataset.notification_table`
     WHERE title = @title
+    AND username = @username
     """
 
     job_config = bigquery.QueryJobConfig(
         query_parameters=[
             bigquery.ScalarQueryParameter("title", "STRING", rtitle),
+            bigquery.ScalarQueryParameter("username", "STRING", user)
         ]
     )
 
     get_client().query(query, job_config=job_config).result()
 
-def add_notification(data):
+def add_notification(data, user):
     """
     Inserts a new reminder record into the notifications table.
     """
     query = """
     INSERT INTO `joshua-stevenson-hu.team_purple_dataset.notification_table`
-    (title, type, date_time, is_repeated, repeat_interval)
-    VALUES (@title, @type, @date_time, @is_repeated, @repeat_interval)
+    (title, type, date_time, is_repeated, repeat_interval, username)
+    VALUES (@title, @type, @date_time, @is_repeated, @repeat_interval, @username)
     """
 
     job_config = bigquery.QueryJobConfig(
@@ -67,12 +71,13 @@ def add_notification(data):
             bigquery.ScalarQueryParameter("date_time", "DATETIME", data["date_time"]),
             bigquery.ScalarQueryParameter("is_repeated", "BOOL", data["repeat"]),
             bigquery.ScalarQueryParameter("repeat_interval", "INTEGER", data["interval"]),
+            bigquery.ScalarQueryParameter("username", "STRING", user),
         ]
     )
 
     get_client().query(query, job_config=job_config).result()
 
-def get_notifications():
+def get_notifications(user):
     """
     Retrieves all active notifications.
     Returns a list of dictionaries for easy use in Streamlit UI.
@@ -80,9 +85,16 @@ def get_notifications():
     query = """
     SELECT title, type, date_time, is_repeated, repeat_interval 
     FROM `joshua-stevenson-hu.team_purple_dataset.notification_table`
+    WHERE username = @username
     """
 
-    results = get_client().query(query).result()
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("username", "STRING", user),
+        ]
+    )
+
+    results = get_client().query(query, job_config=job_config).result()
     notifications = []
     
     # Map BigQuery Row objects to standard Python dictionaries
@@ -96,7 +108,7 @@ def get_notifications():
         })
     return notifications
 
-def get_item_data(i_title, i_type):
+def get_item_data(i_title, i_type, user):
     """
     Validates if a title exists in the source Calendar or Task tables.
     If found, returns a formatted string containing the title and the scheduled date.
@@ -111,11 +123,13 @@ def get_item_data(i_title, i_type):
         SELECT title, start_date_time
         FROM `joshua-stevenson-hu.team_purple_dataset.events_table`
         WHERE LOWER(title) = LOWER(@title)
+        AND username = @username
         LIMIT 1
         """
 
         job_config = bigquery.QueryJobConfig(query_parameters=[
-            bigquery.ScalarQueryParameter("title", "STRING", i_title)
+            bigquery.ScalarQueryParameter("title", "STRING", i_title),
+            bigquery.ScalarQueryParameter("username", "STRING", user)
         ])
 
         results = get_client().query(query, job_config=job_config).result()
@@ -132,11 +146,13 @@ def get_item_data(i_title, i_type):
         SELECT name_of_task, due_date
         FROM `joshua-stevenson-hu.team_purple_dataset.tasks_table`
         WHERE LOWER(name_of_task) = LOWER(@title)
+        AND username = @username
         LIMIT 1
         """
 
         job_config = bigquery.QueryJobConfig(query_parameters=[
-            bigquery.ScalarQueryParameter("title", "STRING", i_title)
+            bigquery.ScalarQueryParameter("title", "STRING", i_title),
+            bigquery.ScalarQueryParameter("username", "STRING", user)
         ])
 
         results = get_client().query(query, job_config=job_config).result()

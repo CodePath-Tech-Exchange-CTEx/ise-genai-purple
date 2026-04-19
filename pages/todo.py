@@ -10,7 +10,14 @@ def display_todo_page():
     client = None
     try:
         client = bigquery.Client(project="oluwaremilekun-adeshina-fisk")
-        query = "SELECT * FROM `joshua-stevenson-hu.team_purple_dataset.tasks_table`"
+        query = "SELECT * FROM `joshua-stevenson-hu.team_purple_dataset.tasks_table` WHERE username = @username"
+
+        job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("username", "STRING", st.session_state.current_user["username"]),
+        ]
+    )
+
         tasks_list = client.query(query).to_dataframe().to_dict('records')
     except Exception as e:
         tasks_list = []

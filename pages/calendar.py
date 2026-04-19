@@ -14,7 +14,7 @@ from helper.calendar_utils import add_event_button, get_calendar_events, event_d
 
 def display_calendar_page():
     """Displays the calendar page of the app."""
-    display_calendar(get_calendar_events(), calendar_options, custom_css)
+    display_calendar(get_calendar_events(st.session_state.current_user["username"]), calendar_options, custom_css)
 
 def display_calendar(calendar_events, calendar_options, custom_css):
     """Displays the calendar UI to see events in this productivity app

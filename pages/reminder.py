@@ -64,7 +64,7 @@ def edit_reminder(reminder):
     with del_col:
         # Delete action: uses unique key to prevent widget collision
         if st.button("Delete", key=f"del_{reminder['title']}"):
-            delete_reminder(reminder['title'])
+            delete_reminder(reminder['title'], st.session_state.current_user["username"])
             st.toast("Deleted!")
             st.rerun() # Closes dialog and refreshes main list
             
@@ -84,7 +84,7 @@ def edit_reminder(reminder):
                 st.error(e)
         else:
             # Push updates to BigQuery helper
-            update_reminder(reminder, new_dt, new_repeated, new_interval)
+            update_reminder(reminder, new_dt, new_repeated, new_interval, st.session_state.current_user["username"])
             st.toast("Reminder edited successfully!")
             st.rerun() 
 
@@ -95,16 +95,34 @@ def load_reminders():
     """
     Fetches latest data from BigQuery and renders reminder 'cards' in a vertical list.
     """
-    reminders = get_notifications()
+    reminders = []
+    with st.spinner("Loading reminders..."):
+        reminders = get_notifications(st.session_state.current_user["username"])
 
+    info_message = "Add Some Reminders"
+    
+    if st.session_state.choose_item_type == "Event":
+        reminders = [r for r in reminders if r.get("type") == "Event"]
+        info_message = "Add Some Event Reminders"
+    elif st.session_state.choose_item_type == "Task":
+        info_message = "Add Some Task Reminders"
+        reminders = [r for r in reminders if r.get("type") == "Task"]
+
+    if st.session_state.sort_by == "Date":
+        reminders.sort(key=lambda x: x.get("date_time", datetime.max))
+    elif st.session_state.sort_by == "A to Z":
+        reminders.sort(key=lambda x: x.get("title", "").lower())
+
+    
     if not reminders:
-        st.info("Add some reminders") 
+        st.info(info_message) 
         return
 
     # Use a column layout to center-align the cards slightly
     right, _ = st.columns([3, 1], vertical_alignment="center")
     
     with right:
+
         for idx, reminder in enumerate(reminders):
             # Outer container for the reminder "card"
             with st.container(border=True): 
@@ -157,6 +175,8 @@ def add_reminder():
     Interface for creating a new reminder record. 
     Cross-references existing tasks/events in BigQuery via get_item_data.
     """
+    st.write("*Choose an existing Event or Task to add a reminder for*")
+    
     new_reminder = {
         "title": "",
         "type": None,
@@ -175,8 +195,9 @@ def add_reminder():
     new_reminder["title"] = st.text_input("Title of the item:", placeholder="Preexisting event or task")
     
     # Validation check: Ensure the event actually exists in the separate events/tasks table
-    if new_reminder["title"]:
-        item_name = get_item_data(new_reminder["title"], new_reminder["type"])
+    with st.spinner("Retrieving Item"):
+        if new_reminder["title"]:
+            item_name = get_item_data(new_reminder["title"], new_reminder["type"], st.session_state.current_user["username"])
 
     new_reminder["date_time"] = st.datetime_input("Notify me at:", format="MM/DD/YYYY")
     new_reminder["repeat"] = True if st.pills("Repeat", ["Yes", "No"]) == "Yes" else False
@@ -211,7 +232,7 @@ def add_reminder():
         else:
             # Overwrite user input with the "Official" name found in BigQuery
             new_reminder["title"] = item_name
-            add_notification(new_reminder)
+            add_notification(new_reminder, st.session_state.current_user["username"])
             st.toast("Reminder added successfully!")
             st.rerun()
 
@@ -226,14 +247,20 @@ def display_reminder_page():
         # Top controls for sorting
         col1, _ = st.columns([1.3, 2], vertical_alignment="bottom", gap="xsmall")
         with col1:
-            st.selectbox(f"Sort By:", ("Date", "Priority", "A to Z"), key="sort_by")
+            st.selectbox("Sort By:", ("Date", "A to Z", "Events", "Tasks"), key="sort_by", placeholder="Date")
 
         # Main call-to-action button
         button_col1, _, _ = st.columns([.6, .7, 2], gap="xsmall")
         with button_col1:
             st.button("Add Reminder", key="add_reminder", on_click=add_reminder, width="stretch")
     
+        pill_select, _ = st.columns([1, 2], gap="xsmall")
+        with pill_select:
+            st.pills("View", ["All", "Event", "Task"], default="All", key="choose_item_type")
+
     st.divider()
+    
+    
     load_reminders()
 
 if __name__ == "__main__":
