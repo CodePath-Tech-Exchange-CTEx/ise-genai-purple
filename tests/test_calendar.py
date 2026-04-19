@@ -29,7 +29,10 @@ def stub_streamlit_calendar(monkeypatch):
 
 
 def make_app():
-    return AppTest.from_file(CALENDAR_PATH)
+    at = AppTest.from_file(CALENDAR_PATH)
+    # ✅ FIX: mock required session state
+    at.session_state["current_user"] = {"username": "test_user"}
+    return at
 
 
 def assert_app_ok(at: AppTest):
@@ -108,9 +111,9 @@ def test_add_event_to_table_valid_runs_insert_query(monkeypatch):
     assert fake_client.last_query is not None
     assert "INSERT INTO" in fake_client.last_query
     assert "events_table" in fake_client.last_query
-    assert "(id, title, start_date_time, end_date_time)" in fake_client.last_query
+    assert "(id, title, start_date_time, end_date_time, username)" in fake_client.last_query
     assert fake_client.last_job_config is not None
-    assert len(fake_client.last_job_config.query_parameters) == 4
+    assert len(fake_client.last_job_config.query_parameters) == 5
 
 
 def test_update_event_in_table_invalid_does_not_query(monkeypatch):
@@ -200,7 +203,7 @@ def test_get_calendar_events_queries_and_formats_rows(monkeypatch):
     fake_client = FakeClient(rows=rows)
     monkeypatch.setattr(calendar_utils, "get_client", lambda: fake_client)
 
-    events = calendar_utils.get_calendar_events()
+    events = calendar_utils.get_calendar_events("test_user")
 
     assert fake_client.last_query is not None
     assert "SELECT id, title, start_date_time, end_date_time" in fake_client.last_query

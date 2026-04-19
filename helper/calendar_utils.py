@@ -15,8 +15,8 @@ def add_event_to_table(title: str, start_dt: datetime, end_dt: datetime):
 
     query = """
     INSERT INTO `joshua-stevenson-hu.team_purple_dataset.events_table`
-    (id, title, start_date_time, end_date_time)
-    VALUES (@id, @title, @start_dt, @end_dt)
+    (id, title, start_date_time, end_date_time, username)
+    VALUES (@id, @title, @start_dt, @end_dt, @username)
     """
 
     job_config = bigquery.QueryJobConfig(
@@ -25,6 +25,7 @@ def add_event_to_table(title: str, start_dt: datetime, end_dt: datetime):
             bigquery.ScalarQueryParameter("title", "STRING", title),
             bigquery.ScalarQueryParameter("start_dt", "DATETIME", start_dt),
             bigquery.ScalarQueryParameter("end_dt", "DATETIME", end_dt),
+            bigquery.ScalarQueryParameter("username", "STRING", st.session_state.current_user["username"]),
         ]
     )
 
@@ -82,9 +83,7 @@ def handle_save_button(is_edit, event_data, title, start_date, start_time, end_d
     end_dt = datetime.combine(end_date, end_time)
 
     with st.spinner("Updating event..." if is_edit else "Saving event..."):
-        success, message = save_or_update_event(
-            is_edit, event_data, title, start_dt, end_dt
-        )
+        success, message = save_or_update_event(is_edit, event_data, title, start_dt, end_dt)
 
     if success:
         st.toast(f"Event {'updated' if is_edit else 'saved'} successfully 🎉")
@@ -242,10 +241,18 @@ def turn_to_right_format(query_events):
     return events
 
 
-def get_calendar_events():
+def get_calendar_events(user: str):
     query = """
-    SELECT id, title, start_date_time, end_date_time
+    SELECT id, title, start_date_time, end_date_time, username
     FROM `joshua-stevenson-hu.team_purple_dataset.events_table`
+    WHERE username = @username
     """
-    query_events = get_client().query(query).result()
+
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("username", "STRING", user),
+        ]
+    )
+
+    query_events = get_client().query(query, job_config=job_config).result()
     return turn_to_right_format(query_events)

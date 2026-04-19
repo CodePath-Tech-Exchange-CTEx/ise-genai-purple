@@ -55,7 +55,7 @@ def get_user_profile(user_id):
     return users[user_id]
 
 
-def get_user_activities(user_id, date):
+def get_user_activities(user_id, date, username):
     """
     GET #1: Returns all activity entries for a specific user on a given date.
     e.g. get_user_activities('user1', '2026-02-23')
@@ -63,7 +63,7 @@ def get_user_activities(user_id, date):
     query = """
         SELECT title, time_span, category, date
         FROM `{table}`
-        WHERE user_id = @user_id
+        WHERE username = @username
           AND date = @date
         ORDER BY time_span DESC
     """.format(table=TABLE)
@@ -72,6 +72,7 @@ def get_user_activities(user_id, date):
         query_parameters=[
             bigquery.ScalarQueryParameter("user_id", "STRING", user_id),
             bigquery.ScalarQueryParameter("date", "DATE", str(date)),
+            bigquery.ScalarQueryParameter("username", "STRING", username),
         ]
     )
 
@@ -79,7 +80,7 @@ def get_user_activities(user_id, date):
     return [dict(row) for row in results]
 
 
-def get_activity_history(user_id, days=7):
+def get_activity_history(user_id, username, days=7):
     """
     GET #2: Returns all activities for a user over the last N days.
     e.g. get_activity_history('user1', days=7)
@@ -87,7 +88,7 @@ def get_activity_history(user_id, days=7):
     query = """
         SELECT title, time_span, category, date
         FROM `{table}`
-        WHERE user_id = @user_id
+        WHERE username = @username
           AND date >= DATE_SUB(CURRENT_DATE(), INTERVAL @days DAY)
         ORDER BY date DESC
     """.format(table=TABLE)
@@ -96,6 +97,7 @@ def get_activity_history(user_id, days=7):
         query_parameters=[
             bigquery.ScalarQueryParameter("user_id", "STRING", user_id),
             bigquery.ScalarQueryParameter("days", "INT64", days),
+            bigquery.ScalarQueryParameter("username", "STRING", username),
         ]
     )
 
@@ -103,7 +105,7 @@ def get_activity_history(user_id, days=7):
     return [dict(row) for row in results]
 
 
-def get_activities_by_category(user_id, category):
+def get_activities_by_category(user_id, category, username):
     """
     GET #3: Returns all activities for a user filtered by category.
     e.g. get_activities_by_category('user1', 'Productive')
@@ -111,7 +113,7 @@ def get_activities_by_category(user_id, category):
     query = """
         SELECT title, time_span, category, date
         FROM `{table}`
-        WHERE user_id = @user_id
+        WHERE username = @username
           AND category = @category
         ORDER BY date DESC
     """.format(table=TABLE)
@@ -120,6 +122,7 @@ def get_activities_by_category(user_id, category):
         query_parameters=[
             bigquery.ScalarQueryParameter("user_id", "STRING", user_id),
             bigquery.ScalarQueryParameter("category", "STRING", category),
+            bigquery.ScalarQueryParameter("username", "STRING", username), 
         ]
     )
 
@@ -127,7 +130,7 @@ def get_activities_by_category(user_id, category):
     return [dict(row) for row in results]
 
 
-def get_daily_summary(user_id, date):
+def get_daily_summary(user_id, date, username):
     """
     GET #4: Returns total minutes spent per category for a user on a given date.
     e.g. get_daily_summary('user1', '2026-02-23')
@@ -135,7 +138,7 @@ def get_daily_summary(user_id, date):
     query = """
         SELECT category, SUM(time_span) AS total_minutes
         FROM `{table}`
-        WHERE user_id = @user_id
+        WHERE username = @username
           AND date = @date
         GROUP BY category
         ORDER BY total_minutes DESC
@@ -145,6 +148,7 @@ def get_daily_summary(user_id, date):
         query_parameters=[
             bigquery.ScalarQueryParameter("user_id", "STRING", user_id),
             bigquery.ScalarQueryParameter("date", "DATE", str(date)),
+            bigquery.ScalarQueryParameter("username", "STRING", username), 
         ]
     )
 
@@ -152,13 +156,13 @@ def get_daily_summary(user_id, date):
     return [dict(row) for row in results]
 
 
-def get_genai_advice(user_id):
+def get_genai_advice(user_id, username):
     """
     GenAI: Fetches today's activity summary from BigQuery then uses
     Vertex AI to generate a personalised suggestion for the user.
     """
     today = str(date.today())
-    summary = get_daily_summary(user_id, today)
+    summary = get_daily_summary(user_id, today, username)
 
     if not summary:
         summary_text = "No activities logged today."
@@ -184,15 +188,15 @@ def get_genai_advice(user_id):
         'date': today,
     }
 
-def add_activity(user_id, title, time_span, category, activity_date):
+def add_activity(user_id, title, time_span, category, activity_date, username):
     """
     POST: Inserts a new activity entry into the analyser_table.
     """
     import uuid
     query = """
         INSERT INTO `{table}`
-        (user_id, entry_id, date, title, time_span, category)
-        VALUES (@user_id, @entry_id, @date, @title, @time_span, @category)
+        (user_id, entry_id, date, title, time_span, category, username)
+        VALUES (@user_id, @entry_id, @date, @title, @time_span, @category, @username)
     """.format(table=TABLE)
 
     job_config = bigquery.QueryJobConfig(
@@ -203,6 +207,7 @@ def add_activity(user_id, title, time_span, category, activity_date):
             bigquery.ScalarQueryParameter("title", "STRING", title),
             bigquery.ScalarQueryParameter("time_span", "FLOAT64", float(time_span)),
             bigquery.ScalarQueryParameter("category", "STRING", category),
+            bigquery.ScalarQueryParameter("username", "STRING", username), 
         ]
     )
 

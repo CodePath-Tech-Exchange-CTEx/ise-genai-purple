@@ -10,7 +10,11 @@ from datetime import date
 from data_fetcher import get_user_activities, get_daily_summary, get_genai_advice, add_activity
 from helper.logic import calculate_completion_percentage
 
-USER_ID = 'user1'
+
+
+USER_ID = None
+
+
 
 
 @st.dialog("Add Activity")
@@ -29,7 +33,7 @@ def add_activity_dialog():
             if not title:
                 st.error("Please enter an activity title.")
             else:
-                success, message = add_activity(USER_ID, title, time_span, category, activity_date)
+                success, message = add_activity(USER_ID, title, time_span, category, activity_date, st.session_state.current_user["username"])
                 if success:
                     st.toast("Activity logged! 🎉")
                     st.rerun()
@@ -58,8 +62,8 @@ def display_time_analyser():
     today = str(date.today())
 
     # --- Fetch real data from BigQuery ---
-    activities_today = get_user_activities(USER_ID, today)
-    daily_summary = get_daily_summary(USER_ID, today)
+    activities_today = get_user_activities(USER_ID, today, st.session_state.current_user["username"])
+    daily_summary = get_daily_summary(USER_ID, today, st.session_state.current_user["username"])
 
     # --- Compute totals from real data ---
     total_minutes = sum(a['time_span'] for a in activities_today)
@@ -88,7 +92,7 @@ def display_time_analyser():
         with st.expander("View Recommendations", expanded=True):
             try:
                 with st.spinner("Generating personalised advice..."):
-                    advice = get_genai_advice(USER_ID)
+                    advice = get_genai_advice(USER_ID, st.session_state.current_user["username"])
                 st.write(advice['content'])
             except Exception:
                 st.warning("⚠️ AI suggestions unavailable right now. Check back soon!")
@@ -142,6 +146,7 @@ def display_time_analyser():
 def display_app_page():
     """Remi's Module: The Time Analyser Page"""
     st.title('📊 Time Analyser')
+    USER_ID = st.session_state.current_user["id"]
 
     name = st.text_input('Enter your name')
     if name:
