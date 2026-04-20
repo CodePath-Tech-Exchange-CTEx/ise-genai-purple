@@ -1,4 +1,5 @@
 import streamlit as st
+from pages.home import display_home_page
 from pages.calendar import display_calendar_page
 from pages.analyser import display_app_page as display_analyser_page
 from pages.reminder import display_reminder_page
@@ -55,6 +56,7 @@ def display_app_page():
         return
 
     # Logged in: show actual app navigation
+    home_page = st.Page(display_home_page, title="Home", icon=":material/home:")
     calendar_page = st.Page(display_calendar_page, title="Calendar", icon=":material/calendar_month:")
     analyser_page = st.Page(display_analyser_page, title="Time Analyser", icon=":material/analytics:")
     reminder_page = st.Page(display_reminder_page, title="Reminders", icon=":material/alarm:")
@@ -63,7 +65,7 @@ def display_app_page():
     render_user_bar(cookies)
 
     pg = st.navigation(
-        [calendar_page, analyser_page, reminder_page, todo_page],
+        [home_page, calendar_page, analyser_page, reminder_page, todo_page],
         position="top"
     )
     pg.run()

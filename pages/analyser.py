@@ -5,16 +5,9 @@
 #############################################################################
 
 import streamlit as st
-import plotly.graph_objects as go
 from datetime import date
 from data_fetcher import get_user_activities, get_daily_summary, get_genai_advice, add_activity
 from helper.logic import calculate_completion_percentage
-
-
-
-USER_ID = None
-
-
 
 
 @st.dialog("Add Activity")
@@ -33,7 +26,10 @@ def add_activity_dialog():
             if not title:
                 st.error("Please enter an activity title.")
             else:
-                success, message = add_activity(USER_ID, title, time_span, category, activity_date, st.session_state.current_user["username"])
+                success, message = add_activity(
+                    None, title, time_span, category, activity_date,
+                    st.session_state.current_user["username"]
+                )
                 if success:
                     st.toast("Activity logged! 🎉")
                     st.rerun()
@@ -60,21 +56,17 @@ def breakdown_dialog(activities):
 
 def display_time_analyser():
     today = str(date.today())
+    username = st.session_state.current_user["username"]
 
     # --- Fetch real data from BigQuery ---
-    activities_today = get_user_activities(USER_ID, today, st.session_state.current_user["username"])
-    daily_summary = get_daily_summary(USER_ID, today, st.session_state.current_user["username"])
+    activities_today = get_user_activities(None, today, username)
+    daily_summary = get_daily_summary(None, today, username)
 
     # --- Compute totals from real data ---
     total_minutes = sum(a['time_span'] for a in activities_today)
     productive_mins = sum(r['total_minutes'] for r in daily_summary if r['category'] == 'Productive')
     unproductive_mins = sum(r['total_minutes'] for r in daily_summary if r['category'] == 'Unproductive')
     fun_mins = sum(r['total_minutes'] for r in daily_summary if r['category'] == 'Fun')
-
-    # --- TASK COMPLETION (mock data — replace with tasks_table query when ready) ---
-    tasks_done = 15
-    tasks_total = 20
-    completion_pct = calculate_completion_percentage(tasks_done, tasks_total)
 
     st.divider()
     col_left, col_right = st.columns([1, 1.2], gap="large")
@@ -92,42 +84,16 @@ def display_time_analyser():
         with st.expander("View Recommendations", expanded=True):
             try:
                 with st.spinner("Generating personalised advice..."):
-                    advice = get_genai_advice(USER_ID, st.session_state.current_user["username"])
+                    advice = get_genai_advice(None, username)
                 st.write(advice['content'])
             except Exception:
                 st.warning("⚠️ AI suggestions unavailable right now. Check back soon!")
 
-        st.markdown("---")
-        if st.button("➕ Log Activity", key="log_activity"):
-            add_activity_dialog()
 
-        if st.button("📋 View Today's Breakdown", key="view_breakdown"):
-            breakdown_dialog(activities_today)
-
-    # --- RIGHT: Visuals ---
+    # --- RIGHT: Time Breakdown ---
     with col_right:
         st.subheader(f"Today: {today}")
 
-        # Task Completion Donut
-        st.markdown("### ✅ Task Completion")
-        fig_tasks = go.Figure(data=[go.Pie(
-            labels=['Completed', 'Remaining'],
-            values=[tasks_done, tasks_total - tasks_done],
-            hole=.7,
-            marker_colors=['#2ecc71', '#ecf0f1'],
-            showlegend=False
-        )])
-        fig_tasks.update_layout(
-            annotations=[dict(text=f'{completion_pct}%', x=0.5, y=0.5,
-                              font_size=20, showarrow=False)],
-            margin=dict(t=0, b=0, l=0, r=0), height=200
-        )
-        st.plotly_chart(fig_tasks, use_container_width=True)
-        st.caption(f"✅ {tasks_done} Tasks Completed | ⭕ {tasks_total - tasks_done} Tasks Left")
-
-        st.divider()
-
-        # Time breakdown metrics
         st.markdown("### ⏱ Time Breakdown")
         m1, m2 = st.columns(2)
         with m1:
@@ -142,15 +108,33 @@ def display_time_analyser():
         else:
             st.warning("No activities logged today. Use '➕ Log Activity' to get started!")
 
+        st.markdown("---")
+        if st.button("📋 View Today's Breakdown", key="view_breakdown"):
+            breakdown_dialog(activities_today)
+
 
 def display_app_page():
     """Remi's Module: The Time Analyser Page"""
     st.title('📊 Time Analyser')
-    USER_ID = st.session_state.current_user["id"]
 
-    name = st.text_input('Enter your name')
-    if name:
-        st.write(f"Logged in as: **{name}**")
+    # Prominent Log Activity button
+    st.markdown(
+        """
+        <style>
+        div[data-testid="stButton"] > button[kind="primary"] {
+            background-color: #2ecc71;
+            color: white;
+            font-size: 18px;
+            padding: 10px 24px;
+            border-radius: 8px;
+            border: none;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+    if st.button("➕ Log Activity", type="primary", key="log_activity_top"):
+        add_activity_dialog()
 
     st.divider()
     display_time_analyser()

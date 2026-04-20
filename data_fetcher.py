@@ -188,6 +188,42 @@ def get_genai_advice(user_id, username):
         'date': today,
     }
 
+def get_home_ai_overview(username):
+    """
+    GenAI: Fetches today's tasks and generates productivity advice
+    to help the user maximise their day.
+    """
+    tasks = get_todays_tasks(username)
+
+    if not tasks:
+        prompt = """
+        A student has no tasks logged for today yet.
+        Give them 2-3 short, friendly and motivating suggestions to help them
+        plan a productive day. Encourage them to set goals and stay focused.
+        Keep it concise and uplifting.
+        """
+    else:
+        done = [t['name_of_task'] for t in tasks if t['completion']]
+        pending = [t['name_of_task'] for t in tasks if not t['completion']]
+
+        done_text = ", ".join(done) if done else "none yet"
+        pending_text = ", ".join(pending) if pending else "all done!"
+
+        prompt = f"""
+        A student has the following tasks today:
+        - Completed: {done_text}
+        - Still pending: {pending_text}
+
+        Give them 2-3 short, friendly and practical suggestions on how to
+        maximise their productivity and get through their remaining tasks.
+        Be encouraging and specific to their task list. Keep it concise.
+        """
+
+    vertexai.init(project=PROJECT_ID, location=REGION)
+    model = GenerativeModel("gemini-2.5-flash")
+    response = model.generate_content(prompt)
+    return response.text
+
 def add_activity(user_id, title, time_span, category, activity_date, username):
     """
     POST: Inserts a new activity entry into the analyser_table.
@@ -262,3 +298,73 @@ def get_user_workouts(user_id):
             'calories_burned': random.randint(0, 100),
         })
     return workouts
+
+def get_todays_tasks(username):
+    """
+    Returns all tasks for a user due today.
+    Used on the home page task list and donut chart.
+    """
+    from datetime import date
+    today = str(date.today())
+    query = """
+        SELECT name_of_task, task_id, category, due_date, completion
+        FROM `joshua-stevenson-hu.team_purple_dataset.tasks_table`
+        WHERE username = @username
+          AND due_date = @today
+        ORDER BY completion ASC
+    """
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("username", "STRING", username),
+            bigquery.ScalarQueryParameter("today", "DATE", today),
+        ]
+    )
+    results = get_client().query(query, job_config=job_config).result()
+    return [dict(row) for row in results]
+
+
+def get_upcoming_reminders(username, limit=3):
+    """
+    Returns the next N upcoming reminders for a user.
+    Used on the home page reminders stack.
+    """
+    query = """
+        SELECT title, type, date_time
+        FROM `joshua-stevenson-hu.team_purple_dataset.notification_table`
+        WHERE username = @username
+          AND date_time >= CURRENT_DATETIME()
+        ORDER BY date_time ASC
+        LIMIT @limit
+    """
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("username", "STRING", username),
+            bigquery.ScalarQueryParameter("limit", "INT64", limit),
+        ]
+    )
+    results = get_client().query(query, job_config=job_config).result()
+    return [dict(row) for row in results]
+
+
+def add_task(username, name_of_task, category, due_date):
+    """
+    POST: Inserts a new task into the tasks_table.
+    """
+    import uuid
+    query = """
+        INSERT INTO `joshua-stevenson-hu.team_purple_dataset.tasks_table`
+        (name_of_task, task_id, category, start_date, due_date, completion, username)
+        VALUES (@name_of_task, @task_id, @category, @start_date, @due_date, false, @username)
+    """
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("name_of_task", "STRING", name_of_task),
+            bigquery.ScalarQueryParameter("task_id", "INT64", abs(hash(str(uuid.uuid4()))) % 1000000),
+            bigquery.ScalarQueryParameter("category", "STRING", category),
+            bigquery.ScalarQueryParameter("start_date", "DATE", str(date.today())),
+            bigquery.ScalarQueryParameter("due_date", "DATE", str(due_date)),
+            bigquery.ScalarQueryParameter("username", "STRING", username),
+        ]
+    )
+    get_client().query(query, job_config=job_config).result()
+    return True, "Task added successfully!"
