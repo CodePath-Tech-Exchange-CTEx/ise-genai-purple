@@ -206,5 +206,165 @@ class TestGetGenaiAdvice(unittest.TestCase):
         mock_init.assert_called_once()
 
 
+# -----------------------------------------------------------------------
+# GET #6: get_todays_tasks
+# -----------------------------------------------------------------------
+class TestGetTodaysTasks(unittest.TestCase):
+
+    def test_returns_tasks_for_user_today(self):
+        fake_rows = [
+            {'name_of_task': 'Do homework', 'task_id': 1, 'category': 'Study',
+             'due_date': date(2026, 4, 19), 'completion': False},
+            {'name_of_task': 'Exercise', 'task_id': 2, 'category': 'Health',
+             'due_date': date(2026, 4, 19), 'completion': True},
+        ]
+        fake_client = FakeClient(rows=fake_rows)
+        with patch('data_fetcher.get_client', return_value=fake_client):
+            result = data_fetcher.get_todays_tasks('remi_the_rems')
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]['name_of_task'], 'Do homework')
+
+    def test_passes_correct_username(self):
+        fake_client = FakeClient(rows=[])
+        with patch('data_fetcher.get_client', return_value=fake_client):
+            data_fetcher.get_todays_tasks('remi_the_rems')
+        params = {p.name: p.value for p in fake_client.last_job_config.query_parameters}
+        self.assertEqual(params['username'], 'remi_the_rems')
+
+    def test_returns_empty_when_no_tasks(self):
+        fake_client = FakeClient(rows=[])
+        with patch('data_fetcher.get_client', return_value=fake_client):
+            result = data_fetcher.get_todays_tasks('remi_the_rems')
+        self.assertEqual(result, [])
+
+    def test_queries_correct_table(self):
+        fake_client = FakeClient(rows=[])
+        with patch('data_fetcher.get_client', return_value=fake_client):
+            data_fetcher.get_todays_tasks('remi_the_rems')
+        self.assertIn('tasks_table', fake_client.last_query)
+
+
+# -----------------------------------------------------------------------
+# GET #7: get_upcoming_reminders
+# -----------------------------------------------------------------------
+class TestGetUpcomingReminders(unittest.TestCase):
+
+    def test_returns_upcoming_reminders(self):
+        fake_rows = [
+            {'title': 'Team meeting', 'type': 'Work',
+             'date_time': '2026-04-19T10:00:00'},
+            {'title': 'Gym session', 'type': 'Health',
+             'date_time': '2026-04-19T17:00:00'},
+        ]
+        fake_client = FakeClient(rows=fake_rows)
+        with patch('data_fetcher.get_client', return_value=fake_client):
+            result = data_fetcher.get_upcoming_reminders('remi_the_rems')
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]['title'], 'Team meeting')
+
+    def test_default_limit_is_3(self):
+        fake_client = FakeClient(rows=[])
+        with patch('data_fetcher.get_client', return_value=fake_client):
+            data_fetcher.get_upcoming_reminders('remi_the_rems')
+        params = {p.name: p.value for p in fake_client.last_job_config.query_parameters}
+        self.assertEqual(params['limit'], 3)
+
+    def test_passes_correct_username(self):
+        fake_client = FakeClient(rows=[])
+        with patch('data_fetcher.get_client', return_value=fake_client):
+            data_fetcher.get_upcoming_reminders('remi_the_rems')
+        params = {p.name: p.value for p in fake_client.last_job_config.query_parameters}
+        self.assertEqual(params['username'], 'remi_the_rems')
+
+    def test_returns_empty_when_no_reminders(self):
+        fake_client = FakeClient(rows=[])
+        with patch('data_fetcher.get_client', return_value=fake_client):
+            result = data_fetcher.get_upcoming_reminders('remi_the_rems')
+        self.assertEqual(result, [])
+
+    def test_queries_correct_table(self):
+        fake_client = FakeClient(rows=[])
+        with patch('data_fetcher.get_client', return_value=fake_client):
+            data_fetcher.get_upcoming_reminders('remi_the_rems')
+        self.assertIn('notification_table', fake_client.last_query)
+
+# -----------------------------------------------------------------------
+# POST: add_task
+# -----------------------------------------------------------------------
+class TestAddTask(unittest.TestCase):
+
+    def test_inserts_into_tasks_table(self):
+        fake_client = FakeClient(rows=[])
+        with patch('data_fetcher.get_client', return_value=fake_client):
+            success, message = data_fetcher.add_task(
+                'remi', 'Do homework', 'Study', '2026-04-20'
+            )
+        self.assertIn('tasks_table', fake_client.last_query)
+        self.assertIn('INSERT INTO', fake_client.last_query)
+
+    def test_returns_success(self):
+        fake_client = FakeClient(rows=[])
+        with patch('data_fetcher.get_client', return_value=fake_client):
+            success, message = data_fetcher.add_task(
+                'remi', 'Do homework', 'Study', '2026-04-20'
+            )
+        self.assertTrue(success)
+        self.assertEqual(message, "Task added successfully!")
+
+    def test_passes_correct_parameters(self):
+        fake_client = FakeClient(rows=[])
+        with patch('data_fetcher.get_client', return_value=fake_client):
+            data_fetcher.add_task('remi', 'Do homework', 'Study', '2026-04-20')
+        params = {p.name: p.value for p in fake_client.last_job_config.query_parameters}
+        self.assertEqual(params['username'], 'remi')
+        self.assertEqual(params['name_of_task'], 'Do homework')
+        self.assertEqual(params['category'], 'Study')
+
+# -----------------------------------------------------------------------
+# GenAI: get_home_ai_overview
+# -----------------------------------------------------------------------
+class TestGetHomeAiOverview(unittest.TestCase):
+
+    def test_returns_string_with_tasks(self):
+        fake_tasks = [
+            {'name_of_task': 'Do homework', 'completion': False},
+            {'name_of_task': 'Exercise', 'completion': True},
+        ]
+        mock_response = MagicMock()
+        mock_response.text = "Great progress! Focus on your homework next."
+
+        with patch('data_fetcher.get_todays_tasks', return_value=fake_tasks), \
+             patch('data_fetcher.vertexai.init'), \
+             patch('data_fetcher.GenerativeModel') as MockModel:
+            MockModel.return_value.generate_content.return_value = mock_response
+            result = data_fetcher.get_home_ai_overview('remi')
+
+        self.assertIsInstance(result, str)
+        self.assertEqual(result, "Great progress! Focus on your homework next.")
+
+    def test_returns_string_with_no_tasks(self):
+        mock_response = MagicMock()
+        mock_response.text = "No tasks yet — plan a productive day!"
+
+        with patch('data_fetcher.get_todays_tasks', return_value=[]), \
+             patch('data_fetcher.vertexai.init'), \
+             patch('data_fetcher.GenerativeModel') as MockModel:
+            MockModel.return_value.generate_content.return_value = mock_response
+            result = data_fetcher.get_home_ai_overview('remi')
+
+        self.assertIsInstance(result, str)
+        self.assertEqual(result, "No tasks yet — plan a productive day!")
+
+    def test_calls_vertex_ai(self):
+        with patch('data_fetcher.get_todays_tasks', return_value=[]), \
+             patch('data_fetcher.vertexai.init') as mock_init, \
+             patch('data_fetcher.GenerativeModel') as MockModel:
+            MockModel.return_value.generate_content.return_value = MagicMock(text="tip")
+            data_fetcher.get_home_ai_overview('remi')
+
+        mock_init.assert_called_once()
+        MockModel.assert_called_once()
+
+
 if __name__ == '__main__':
     unittest.main()
