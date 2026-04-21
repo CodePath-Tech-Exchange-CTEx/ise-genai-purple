@@ -6,25 +6,34 @@ def display_todo_page():
     import vertexai
     from vertexai.generative_models import GenerativeModel
     
-    st.title("to-do")
+    #go back button 
+    header_col1, header_col2 = st.columns([4, 1])
+    with header_col1:
+        st.title("to-do")
+    with header_col2:
+        st.write("")
+        if st.button("go back", type="primary"):
+            st.write("back to homepage!") 
     client = None
     try:
-        client = bigquery.Client(project="project-6e90bd07-d669-4de8-930")
+        client = bigquery.Client(project="andrea-vazquez-nmsu")
         query = "SELECT * FROM `joshua-stevenson-hu.team_purple_dataset.tasks_table`"
         tasks_list = client.query(query).to_dataframe().to_dict('records')
     except Exception as e:
         tasks_list = []
+        st.error(f"could not get tasks, details:{e}")
 
     #write task
     st.subheader("add a new task!")
-    input_col1, input_col2, input_col3 = st.columns([1, 1, 2])
+    new_task = st.text_input("task title...")
+    #add task desc
+    new_description = st.text_area("task description...", height=100)
+    input_col1, input_col2 = st.columns(2)
 
     with input_col1:
         new_category = st.selectbox("category", ["school", "work", "life", "urgent 🕒"])
     with input_col2:
         new_date = st.date_input("date")
-    with input_col3:
-        new_task = st.text_input("new task......")
 
     # button to add task
     if st.button("add task"):
@@ -33,9 +42,9 @@ def display_todo_page():
             
             insert_query = f"""
                 INSERT INTO `joshua-stevenson-hu.team_purple_dataset.tasks_table` 
-                (name_of_task, task_id, category, start_date, due_date, completion)
+                (name_of_task, description, task_id, category, start_date, due_date, completion)
                 VALUES 
-                ('{new_task}', {unique_id}, '{new_category}', '{new_date}', '{new_date}', False)
+                ('{new_task}', '{new_description}', {unique_id}, '{new_category}', '{new_date}', '{new_date}', False)
             """
             try:
                 client.query(insert_query).result()
@@ -47,6 +56,8 @@ def display_todo_page():
     st.divider()
 
     st.subheader("AI tasks overview")
+    #description of the AI overview
+    st.write("create an ai overview of your current to-dos to figure out what to do first!! ")
     if st.button("generate overview"):
         if not tasks_list:
             st.info("you don't have any tasks yet! add some so i can help you plan!")
@@ -56,7 +67,8 @@ def display_todo_page():
                     #tasks for ai
                     task_strings = []
                     for t in tasks_list:
-                        task_strings.append(f"- {t['name_of_task']} (Category: {t['category']}, Due: {t['due_date']})")
+                        desc = t.get('description', 'no description')
+                        task_strings.append(f"- {t['name_of_task']} ({desc}) (Category: {t['category']}, Due: {t['due_date']})")
                     task_summary = "\n".join(task_strings)
 
                     #ai prompt
@@ -71,7 +83,7 @@ def display_todo_page():
                     Keep the response short.
                     """
                     #vertexai
-                    vertexai.init(project="project-6e90bd07-d669-4de8-930")
+                    vertexai.init(project="andrea-vazquez-nmsu")
                     model = GenerativeModel("gemini-2.5-flash-lite")
                     response = model.generate_content(prompt)
 
