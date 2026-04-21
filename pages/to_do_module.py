@@ -5,6 +5,7 @@ def display_todo_page():
     import time
     import vertexai
     from vertexai.generative_models import GenerativeModel
+    from pages.home import display_home_page
     
     #go back button 
     header_col1, header_col2 = st.columns([4, 1])
@@ -13,24 +14,21 @@ def display_todo_page():
     with header_col2:
         st.write("")
         if st.button("go back", type="primary"):
-            st.write("back to homepage!") 
+            st.session_state["nav_target"] = "home" #written by gemini
+            st.rerun() #written by gemini
+     
     client = None
     try:
-<<<<<<< HEAD:pages/to_do_module.py
         client = bigquery.Client(project="andrea-vazquez-nmsu")
-        query = "SELECT * FROM `joshua-stevenson-hu.team_purple_dataset.tasks_table`"
-=======
-        client = bigquery.Client(project="oluwaremilekun-adeshina-fisk")
         query = "SELECT * FROM `joshua-stevenson-hu.team_purple_dataset.tasks_table` WHERE username = @username"
-
+        
         job_config = bigquery.QueryJobConfig(
-        query_parameters=[
-            bigquery.ScalarQueryParameter("username", "STRING", st.session_state.current_user["username"]),
-        ]
-    )
+            query_parameters=[
+                bigquery.ScalarQueryParameter("username", "STRING", st.session_state.current_user["username"]),
+            ]
+        )
+        tasks_list = client.query(query, job_config=job_config).to_dataframe().to_dict('records')
 
->>>>>>> 7dc15f8ea6f50b0df0cb9909e583267efe32a3b0:pages/todo.py
-        tasks_list = client.query(query).to_dataframe().to_dict('records')
     except Exception as e:
         tasks_list = []
         st.error(f"could not get tasks, details:{e}")

@@ -144,7 +144,9 @@ def display_home_page():
                 add_task_dialog(username)
         with col_b2:
             if st.button("📅 See Calendar", width='stretch'):
-                st.info("Use the nav bar above!")
+                #switch to calendar page when using button
+                st.session_state["nav_target"] = "calendar" #written by gemini
+                st.rerun()#written by gemini
 
         # Upcoming Reminders
         st.markdown("### 🔔 Upcoming Reminders")
