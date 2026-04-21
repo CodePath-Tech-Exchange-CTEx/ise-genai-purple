@@ -3,3 +3,7 @@ google-cloud-bigquery
 google-cloud-aiplatform
 streamlit-calendar
 pytest
+plotly
+vertexai
+streamlit-cookies-manager
+

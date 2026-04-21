@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import pytest
 from streamlit.testing.v1 import AppTest
 
-from helper import utils
+from helper import calendar_utils
 import pages.calendar as calendar_page
 
 
@@ -29,7 +29,10 @@ def stub_streamlit_calendar(monkeypatch):
 
 
 def make_app():
-    return AppTest.from_file(CALENDAR_PATH)
+    at = AppTest.from_file(CALENDAR_PATH)
+    # ✅ FIX: mock required session state
+    at.session_state["current_user"] = {"username": "test_user"}
+    return at
 
 
 def assert_app_ok(at: AppTest):
@@ -61,7 +64,7 @@ class FakeClient:
 
 def test_calendar_page_renders(monkeypatch):
     fake_client = FakeClient(rows=[])
-    monkeypatch.setattr(utils, "get_client", lambda: fake_client)
+    monkeypatch.setattr(calendar_utils, "get_client", lambda: fake_client)
 
     at = make_app().run()
     assert_app_ok(at)
@@ -72,23 +75,21 @@ def test_calendar_page_renders(monkeypatch):
 
 def test_add_event_button_is_present(monkeypatch):
     fake_client = FakeClient(rows=[])
-    monkeypatch.setattr(utils, "get_client", lambda: fake_client)
+    monkeypatch.setattr(calendar_utils, "get_client", lambda: fake_client)
 
     at = make_app().run()
     assert_app_ok(at)
 
-    add_event_btn = at.button("➕ Add event")
-    assert add_event_btn.label == "➕ Add event"
-
+    assert any(btn.label == "➕ Add manually" for btn in at.button)
 
 def test_add_event_to_table_invalid_does_not_query(monkeypatch):
     fake_client = FakeClient()
-    monkeypatch.setattr(utils, "get_client", lambda: fake_client)
+    monkeypatch.setattr(calendar_utils, "get_client", lambda: fake_client)
 
     start = datetime(2026, 2, 21, 12, 0)
     end = datetime(2026, 2, 21, 11, 0)
 
-    ok, err = utils.add_event_to_table("Bad event", start, end)
+    ok, err = calendar_utils.add_event_to_table("Bad event", start, end)
 
     assert ok is False
     assert err == "End must be after start."
@@ -98,31 +99,31 @@ def test_add_event_to_table_invalid_does_not_query(monkeypatch):
 
 def test_add_event_to_table_valid_runs_insert_query(monkeypatch):
     fake_client = FakeClient()
-    monkeypatch.setattr(utils, "get_client", lambda: fake_client)
+    monkeypatch.setattr(calendar_utils, "get_client", lambda: fake_client)
 
     start = datetime(2026, 2, 21, 10, 0)
     end = datetime(2026, 2, 21, 11, 0)
 
-    ok, err = utils.add_event_to_table("Study block", start, end)
+    ok, err = calendar_utils.add_event_to_table("Study block", start, end)
 
     assert ok is True
     assert err == "Event added."
     assert fake_client.last_query is not None
     assert "INSERT INTO" in fake_client.last_query
     assert "events_table" in fake_client.last_query
-    assert "(id, title, start_date_time, end_date_time)" in fake_client.last_query
+    assert "(id, title, start_date_time, end_date_time, username)" in fake_client.last_query
     assert fake_client.last_job_config is not None
-    assert len(fake_client.last_job_config.query_parameters) == 4
+    assert len(fake_client.last_job_config.query_parameters) == 5
 
 
 def test_update_event_in_table_invalid_does_not_query(monkeypatch):
     fake_client = FakeClient()
-    monkeypatch.setattr(utils, "get_client", lambda: fake_client)
+    monkeypatch.setattr(calendar_utils, "get_client", lambda: fake_client)
 
     start = datetime(2026, 2, 21, 14, 0)
     end = datetime(2026, 2, 21, 13, 0)
 
-    ok, err = utils.update_event_in_table("evt_123", "Bad update", start, end)
+    ok, err = calendar_utils.update_event_in_table("evt_123", "Bad update", start, end)
 
     assert ok is False
     assert err == "End must be after start."
@@ -132,12 +133,12 @@ def test_update_event_in_table_invalid_does_not_query(monkeypatch):
 
 def test_update_event_in_table_valid_runs_update_query(monkeypatch):
     fake_client = FakeClient()
-    monkeypatch.setattr(utils, "get_client", lambda: fake_client)
+    monkeypatch.setattr(calendar_utils, "get_client", lambda: fake_client)
 
     start = datetime(2026, 2, 21, 15, 0)
     end = datetime(2026, 2, 21, 16, 0)
 
-    ok, err = utils.update_event_in_table("evt_123", "Updated event", start, end)
+    ok, err = calendar_utils.update_event_in_table("evt_123", "Updated event", start, end)
 
     assert ok is True
     assert err == "Event updated."
@@ -165,7 +166,7 @@ def test_turn_to_right_format_converts_rows():
         ),
     ]
 
-    events = utils.turn_to_right_format(rows)
+    events = calendar_utils.turn_to_right_format(rows)
 
     assert events == [
         {
@@ -200,9 +201,9 @@ def test_get_calendar_events_queries_and_formats_rows(monkeypatch):
     ]
 
     fake_client = FakeClient(rows=rows)
-    monkeypatch.setattr(utils, "get_client", lambda: fake_client)
+    monkeypatch.setattr(calendar_utils, "get_client", lambda: fake_client)
 
-    events = utils.get_calendar_events()
+    events = calendar_utils.get_calendar_events("test_user")
 
     assert fake_client.last_query is not None
     assert "SELECT id, title, start_date_time, end_date_time" in fake_client.last_query
@@ -279,3 +280,74 @@ def test_display_calendar_does_nothing_when_no_event_click(monkeypatch):
     calendar_page.display_calendar([], {}, "")
 
     assert called["count"] == 0
+
+def test_delete_event_from_table_runs_delete_query(monkeypatch):
+    fake_client = FakeClient()
+    monkeypatch.setattr(calendar_utils, "get_client", lambda: fake_client)
+
+    ok, msg = calendar_utils.delete_event_from_table("evt_999")
+
+    assert ok is True
+    assert msg == "Event deleted."
+    assert fake_client.last_query is not None
+    assert "DELETE FROM" in fake_client.last_query
+    assert "events_table" in fake_client.last_query
+    assert "WHERE id = @id" in fake_client.last_query
+    assert fake_client.last_job_config is not None
+    assert len(fake_client.last_job_config.query_parameters) == 1
+
+
+def test_save_or_update_event_calls_add_when_not_edit(monkeypatch):
+    called = {}
+
+    def fake_add(title, start_dt, end_dt):
+        called["title"] = title
+        called["start_dt"] = start_dt
+        called["end_dt"] = end_dt
+        return True, "Event added."
+
+    monkeypatch.setattr(calendar_utils, "add_event_to_table", fake_add)
+
+    start = datetime(2026, 4, 17, 10, 0)
+    end = datetime(2026, 4, 17, 11, 0)
+
+    ok, msg = calendar_utils.save_or_update_event(
+        False, None, "Study Session", start, end
+    )
+
+    assert ok is True
+    assert msg == "Event added."
+    assert called["title"] == "Study Session"
+    assert called["start_dt"] == start
+    assert called["end_dt"] == end
+
+
+def test_save_or_update_event_calls_update_when_edit(monkeypatch):
+    called = {}
+
+    def fake_update(event_id, title, start_dt, end_dt):
+        called["event_id"] = event_id
+        called["title"] = title
+        called["start_dt"] = start_dt
+        called["end_dt"] = end_dt
+        return True, "Event updated."
+
+    monkeypatch.setattr(calendar_utils, "update_event_in_table", fake_update)
+
+    start = datetime(2026, 4, 17, 12, 0)
+    end = datetime(2026, 4, 17, 13, 0)
+
+    ok, msg = calendar_utils.save_or_update_event(
+        True,
+        {"id": "evt_123"},
+        "Updated Study Session",
+        start,
+        end,
+    )
+
+    assert ok is True
+    assert msg == "Event updated."
+    assert called["event_id"] == "evt_123"
+    assert called["title"] == "Updated Study Session"
+    assert called["start_dt"] == start
+    assert called["end_dt"] == end

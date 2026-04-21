@@ -16,8 +16,20 @@ def display_todo_page():
             st.write("back to homepage!") 
     client = None
     try:
+<<<<<<< HEAD:pages/to_do_module.py
         client = bigquery.Client(project="andrea-vazquez-nmsu")
         query = "SELECT * FROM `joshua-stevenson-hu.team_purple_dataset.tasks_table`"
+=======
+        client = bigquery.Client(project="oluwaremilekun-adeshina-fisk")
+        query = "SELECT * FROM `joshua-stevenson-hu.team_purple_dataset.tasks_table` WHERE username = @username"
+
+        job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("username", "STRING", st.session_state.current_user["username"]),
+        ]
+    )
+
+>>>>>>> 7dc15f8ea6f50b0df0cb9909e583267efe32a3b0:pages/todo.py
         tasks_list = client.query(query).to_dataframe().to_dict('records')
     except Exception as e:
         tasks_list = []

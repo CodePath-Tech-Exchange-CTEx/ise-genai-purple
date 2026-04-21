@@ -1,9 +1,8 @@
-# TODO: Replace with your team name
+## Deployment
+https://ise-genai-purple-1077300583091.us-central1.run.app/display_app_page
 
 ## Our Team
-
-TODO: Replace with your team members
-
+Joshua, Ikechukwu, Andrea, Oluwaremilekun
 # Setup
 
 One person needs to follow SETUP.md to complete setup. Ignore this if it is already done for you!
