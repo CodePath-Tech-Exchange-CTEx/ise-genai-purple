@@ -17,8 +17,8 @@ class TestDisplayTodoPage(unittest.TestCase):
         at = AppTest.from_function(display_todo_page)
         at.run()
         self.assertEqual(at.selectbox[0].label, "category")
-        self.assertEqual(at.text_input[0].label, "new task......")
-        self.assertEqual(at.button[0].label, "add task")
+        self.assertEqual(at.text_input[0].label, "task title...")
+        self.assertEqual(at.button[1].label, "add task")
 
     def test_todo_columns(self):
         """checks that the four category columns render"""
@@ -35,7 +35,7 @@ class TestDisplayTodoPage(unittest.TestCase):
         at = AppTest.from_function(display_todo_page)
         at.run(timeout=15)
 
-        self.assertEqual(at.button[1].label, "generate overview")
+        self.assertEqual(at.button[2].label, "generate overview")
         subheaders = [sh.value for sh in at.subheader]
         self.assertIn("AI tasks overview", subheaders)
 
