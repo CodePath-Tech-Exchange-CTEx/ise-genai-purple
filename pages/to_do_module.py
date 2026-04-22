@@ -49,19 +49,20 @@ def display_todo_page():
     if st.button("add task"):
         if new_task: 
             unique_id = int(time.time()) 
+            current_username = st.session_state.current_user["username"]
             
             insert_query = f"""
                 INSERT INTO `joshua-stevenson-hu.team_purple_dataset.tasks_table` 
-                (name_of_task, description, task_id, category, start_date, due_date, completion)
+                (name_of_task, description, task_id, category, start_date, due_date, completion, username)
                 VALUES 
-                ('{new_task}', '{new_description}', {unique_id}, '{new_category}', '{new_date}', '{new_date}', False)
+                ('{new_task}', '{new_description}', {unique_id}, '{new_category}', '{new_date}', '{new_date}', False, '{current_username}')
             """
             try:
                 client.query(insert_query).result()
                 st.success("task added!")
                 st.rerun()
             except Exception as e:
-                st.error(f"Failed to add task: {e}")
+                st.error(f"failed to add task: {e}")
 
     st.divider()
 
