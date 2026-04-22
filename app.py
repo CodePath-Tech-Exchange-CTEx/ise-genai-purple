@@ -3,7 +3,7 @@ from pages.home import display_home_page
 from pages.calendar import display_calendar_page
 from pages.analyser import display_app_page as display_analyser_page
 from pages.reminder import display_reminder_page
-from pages.todo import display_todo_page
+from pages.to_do_module import display_todo_page
 from pages.login import display_login_page
 from pages.signup import display_signup_page
 from pages.recovery import display_recovery_page
@@ -45,6 +45,9 @@ def display_app_page():
 
     try_cookie_login(cookies)
 
+    #st.session_state.authenticated = True #gemini bypass for testing
+    #st.session_state.current_user = {"username": "test_user"} #gemini bypass for testing
+
     # Not logged in: render auth screens directly
     if not st.session_state.authenticated:
         if st.session_state.auth_view == "login":
@@ -60,7 +63,7 @@ def display_app_page():
     calendar_page = st.Page(display_calendar_page, title="Calendar", icon=":material/calendar_month:")
     analyser_page = st.Page(display_analyser_page, title="Time Analyser", icon=":material/analytics:")
     reminder_page = st.Page(display_reminder_page, title="Reminders", icon=":material/alarm:")
-    todo_page = st.Page(display_todo_page, title="Todo", icon=":material/check_circle:")
+    todo_page = st.Page(display_todo_page, title="To-Do List", icon=":material/checklist:")
 
     render_user_bar(cookies)
 
@@ -68,6 +71,13 @@ def display_app_page():
         [home_page, calendar_page, analyser_page, reminder_page, todo_page],
         position="top"
     )
+    if st.session_state.get("nav_target") == "home":
+        st.session_state["nav_target"] = None
+        st.switch_page(home_page)
+
+    if st.session_state.get("nav_target") == "calendar":
+        st.session_state["nav_target"] = None
+        st.switch_page(calendar_page)
     pg.run()
 
 
