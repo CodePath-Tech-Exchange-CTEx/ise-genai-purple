@@ -45,8 +45,8 @@ def display_app_page():
 
     try_cookie_login(cookies)
 
-    st.session_state.authenticated = True #gemini bypass for testing
-    st.session_state.current_user = {"username": "test_user"} #gemini bypass for testing
+    #st.session_state.authenticated = True #gemini bypass for testing
+    #st.session_state.current_user = {"username": "test_user"} #gemini bypass for testing
 
     # Not logged in: render auth screens directly
     if not st.session_state.authenticated:
