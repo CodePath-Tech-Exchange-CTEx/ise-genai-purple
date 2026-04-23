@@ -108,3 +108,47 @@ def auth_styles():
     }
     </style>
     """, unsafe_allow_html=True)
+
+def routing_button_styles():
+    st.markdown("""
+    <style>
+    div[data-testid="stPageLink"] {
+        margin: 0 !important;
+    }
+
+    div[data-testid="stPageLink"] a {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        width: 100% !important;
+        height: 38px !important;
+        padding: 0 0.75rem !important;
+
+        border: 1px solid rgba(128, 128, 128, 0.35) !important;
+        border-radius: 0.5rem !important;
+
+        background-color: var(--background-color) !important;
+        color: var(--text-color) !important;
+
+        font-weight: 500 !important;
+        text-decoration: none !important;
+        box-sizing: border-box !important;
+    }
+
+    div[data-testid="stPageLink"] a:hover {
+        background-color: var(--secondary-background-color) !important;
+        color: var(--text-color) !important;
+    }
+
+    div[data-testid="stPageLink"] p {
+        margin: 0 !important;
+        text-align: center !important;
+        width: 100% !important;
+    }
+
+    div[data-testid="stPageLink"] [data-testid="stPageLinkIcon"] {
+        display: none !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)

@@ -9,6 +9,7 @@ import plotly.graph_objects as go
 from datetime import date
 from data_fetcher import get_todays_tasks, get_upcoming_reminders, get_home_ai_overview, add_task
 from helper.logic import calculate_completion_percentage
+from helper.constants import routing_button_styles
 
 @st.dialog("Create a New Task! 📝")
 def add_task_dialog(username):
@@ -41,9 +42,10 @@ def add_task_dialog(username):
         if st.button("Close ✕", width='stretch'):
             st.rerun()
 
-def display_home_page():
+def display_home_page(calendar_page):
     """Displays the home page with a summary overview of the app."""
 
+    routing_button_styles()
     # --- Get logged in user ---
     current_user = st.session_state.get("current_user", {})
     username = current_user.get("username", "User") if isinstance(current_user, dict) else current_user
@@ -138,15 +140,14 @@ def display_home_page():
             st.caption(f"✅ {tasks_done} Done | ⭕ {tasks_total - tasks_done} Remaining")
 
         # Buttons
-        col_b1, col_b2 = st.columns(2)
-        with col_b1:
-            if st.button("➕ Add Task", width='stretch'):
-                add_task_dialog(username)
-        with col_b2:
-            if st.button("📅 See Calendar", width='stretch'):
-                #switch to calendar page when using button
-                st.session_state["nav_target"] = "calendar" #written by gemini
-                st.rerun()#written by gemini
+        if st.button("➕ Add Task", width="stretch"):
+            add_task_dialog(username)
+
+        st.page_link(
+            calendar_page,
+            label="See Calendar",
+            width="stretch"
+        )
 
         # Upcoming Reminders
         st.markdown("### 🔔 Upcoming Reminders")
@@ -157,7 +158,3 @@ def display_home_page():
                 with st.container(border=True):
                     st.markdown(f"**{reminder['title']}**")
                     st.caption(f"🕐 {reminder['date_time']} · {reminder['type']}")
-
-
-if __name__ == '__main__':
-    display_home_page()

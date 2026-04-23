@@ -1,5 +1,5 @@
 import unittest
-from pages.to_do_module import display_todo_page
+from pages.todo import display_todo_page
 from streamlit.testing.v1 import AppTest
 from modules import display_post, display_activity_summary, display_genai_advice, display_recent_workouts
 
@@ -10,7 +10,7 @@ class TestDisplayTodoPage(unittest.TestCase):
         """checks that the page title works"""
         at = AppTest.from_function(display_todo_page)
         at.run()
-        self.assertEqual(at.title[0].value, "to-do")
+        self.assertEqual(at.title[0].value, "To-do")
 
     def test_todo_ui_elements(self):
         """checks that the input widgets and button render correctly"""
@@ -18,7 +18,7 @@ class TestDisplayTodoPage(unittest.TestCase):
         at.run()
         self.assertEqual(at.selectbox[0].label, "category")
         self.assertEqual(at.text_input[0].label, "task title...")
-        self.assertEqual(at.button[1].label, "add task")
+        self.assertEqual(at.button[0].label, "add task")
 
     def test_todo_columns(self):
         """checks that the four category columns render"""
@@ -35,7 +35,7 @@ class TestDisplayTodoPage(unittest.TestCase):
         at = AppTest.from_function(display_todo_page)
         at.run(timeout=15)
 
-        self.assertEqual(at.button[2].label, "generate overview")
+        self.assertEqual(at.button[1].label, "generate overview")
         subheaders = [sh.value for sh in at.subheader]
         self.assertIn("AI tasks overview", subheaders)
 
