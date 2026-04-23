@@ -112,7 +112,6 @@ def auth_styles():
 def routing_button_styles():
     st.markdown("""
     <style>
-    /* Make page_link look like a proper button */
     div[data-testid="stPageLink"] {
         margin: 0 !important;
     }
@@ -124,32 +123,30 @@ def routing_button_styles():
 
         width: 100% !important;
         height: 38px !important;
-
         padding: 0 0.75rem !important;
 
-        border: 1px solid rgba(49, 51, 63, 0.2) !important;
+        border: 1px solid rgba(128, 128, 128, 0.35) !important;
         border-radius: 0.5rem !important;
 
-        background-color: white !important;
-        color: rgb(49, 51, 63) !important;
+        background-color: var(--background-color) !important;
+        color: var(--text-color) !important;
 
         font-weight: 500 !important;
         text-decoration: none !important;
+        box-sizing: border-box !important;
     }
 
-    /* Hover effect */
     div[data-testid="stPageLink"] a:hover {
-        background-color: rgba(240, 242, 246, 0.6) !important;
+        background-color: var(--secondary-background-color) !important;
+        color: var(--text-color) !important;
     }
 
-    /* Center text perfectly */
     div[data-testid="stPageLink"] p {
         margin: 0 !important;
         text-align: center !important;
         width: 100% !important;
     }
 
-    /* Remove default icon */
     div[data-testid="stPageLink"] [data-testid="stPageLinkIcon"] {
         display: none !important;
     }
