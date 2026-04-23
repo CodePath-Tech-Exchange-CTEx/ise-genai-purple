@@ -14,12 +14,12 @@ def display_todo_page():
     with header_col2:
         st.write("")
         if st.button("go back", type="primary"):
-            st.session_state["nav_target"] = "home" #written by gemini
-            st.rerun() #written by gemini
+            st.session_state["nav_target"] = "home"
+            st.rerun()
      
     client = None
     try:
-        client = bigquery.Client(project="andrea-vazquez-nmsu")
+        client = bigquery.Client(project="joshua-stevenson-hu")
         query = "SELECT * FROM `joshua-stevenson-hu.team_purple_dataset.tasks_table` WHERE username = @username"
         
         job_config = bigquery.QueryJobConfig(
@@ -94,7 +94,7 @@ def display_todo_page():
                     Keep the response short.
                     """
                     #vertexai
-                    vertexai.init(project="andrea-vazquez-nmsu")
+                    vertexai.init(project="oluwaremilekun-adeshina-fisk")
                     model = GenerativeModel("gemini-2.5-flash-lite")
                     response = model.generate_content(prompt)
 

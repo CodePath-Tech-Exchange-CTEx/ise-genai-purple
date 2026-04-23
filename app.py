@@ -24,9 +24,9 @@ def display_app_page():
         password="productivity_app_cookies",
     )
 
-    if not cookies.ready():
-        st.write("Loading session...")
-        st.stop()
+    #if not cookies.ready():
+        #st.write("Loading session...")
+        #st.stop()
 
     st.set_option("client.showSidebarNavigation", False)
 
@@ -43,10 +43,10 @@ def display_app_page():
     if "auth_view" not in st.session_state:
         st.session_state.auth_view = "login"
 
-    try_cookie_login(cookies)
+    #try_cookie_login(cookies)
 
-    #st.session_state.authenticated = True #gemini bypass for testing
-    #st.session_state.current_user = {"username": "test_user"} #gemini bypass for testing
+    st.session_state.authenticated = True #gemini bypass for testing
+    st.session_state.current_user = {"username": "test_user"} #gemini bypass for testing
 
     # Not logged in: render auth screens directly
     if not st.session_state.authenticated:
