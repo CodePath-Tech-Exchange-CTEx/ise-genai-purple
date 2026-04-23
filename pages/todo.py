@@ -1,34 +1,38 @@
-def display_todo_page():
+def display_todo_page(home_page=None):
     """displays the todo list page of the app."""
     import streamlit as st
     from google.cloud import bigquery
     import time
     import vertexai
     from vertexai.generative_models import GenerativeModel
-    from pages.home import display_home_page
+    from helper.constants import routing_button_styles
     
-    #go back button 
-    header_col1, header_col2 = st.columns([4, 1])
-    with header_col1:
-        st.title("to-do")
-    with header_col2:
-        st.write("")
-        if st.button("go back", type="primary"):
-            st.session_state["nav_target"] = "home" #written by gemini
-            st.rerun() #written by gemini
-     
+    routing_button_styles()
+
+    col1, col2 = st.columns([6, 2])
+    with col1:
+        st.title("To-do")
+
+    with col2:
+        if home_page is not None:
+            st.page_link(
+                home_page,
+                label="Go Back",
+                width="content"
+            )
+
     client = None
     try:
-        client = bigquery.Client(project="andrea-vazquez-nmsu")
+        client = bigquery.Client()
         query = "SELECT * FROM `joshua-stevenson-hu.team_purple_dataset.tasks_table` WHERE username = @username"
-        
-        job_config = bigquery.QueryJobConfig(
-            query_parameters=[
-                bigquery.ScalarQueryParameter("username", "STRING", st.session_state.current_user["username"]),
-            ]
-        )
-        tasks_list = client.query(query, job_config=job_config).to_dataframe().to_dict('records')
 
+        job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("username", "STRING", st.session_state.current_user["username"]),
+        ]
+    )
+
+        tasks_list = client.query(query, job_config=job_config).to_dataframe().to_dict('records')
     except Exception as e:
         tasks_list = []
         st.error(f"could not get tasks, details:{e}")
@@ -62,7 +66,7 @@ def display_todo_page():
                 st.success("task added!")
                 st.rerun()
             except Exception as e:
-                st.error(f"failed to add task: {e}")
+                st.error(f"Failed to add task: {e}")
 
     st.divider()
 
@@ -94,7 +98,7 @@ def display_todo_page():
                     Keep the response short.
                     """
                     #vertexai
-                    vertexai.init(project="andrea-vazquez-nmsu")
+                    vertexai.init(project="oluwaremilekun-adeshina-fisk", location="us-central1")
                     model = GenerativeModel("gemini-2.5-flash-lite")
                     response = model.generate_content(prompt)
 
@@ -129,5 +133,3 @@ def display_todo_page():
         for t in tasks_list:
             if t["category"] == "urgent 🕒":
                 st.checkbox(f"{t['name_of_task']} ({t['due_date']})", key=str(t['task_id'])+'urgent')
-if __name__ == "__main__":
-    display_todo_page()
