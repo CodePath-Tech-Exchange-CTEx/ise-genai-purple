@@ -69,9 +69,12 @@ def auth_styles():
 
     .create-account, .bottom-link {
         text-align: center;
-        margin-top: 1rem;
         font-size: 0.95rem;
         color: var(--text-color);
+    }
+
+    .bottom-link {
+        margin-top: 1rem;
     }
 
     div[data-testid="stTextInput"] label,
@@ -95,7 +98,7 @@ def auth_styles():
         color: var(--text-color) !important;
     }
 
-    div.stButton button {
+    div.stButton button[kind="primary"] {
         background-color: var(--primary-color) !important;
         color: var(--background-color) !important;
         border: 1px solid rgba(128, 128, 128, 0.35) !important;
@@ -103,7 +106,7 @@ def auth_styles():
         font-weight: 500;
     }
 
-    div.stButton > button:hover {
+    div.stButton button[kind="primary"]:hover {
         filter: brightness(0.95);
     }
     </style>

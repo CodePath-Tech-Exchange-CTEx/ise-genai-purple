@@ -22,25 +22,28 @@ def display_login_page(cookies):
             placeholder="Enter your password"
         )
 
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            remember_me = st.checkbox("Remember me")
-
+        remember_me = st.checkbox("Remember me")
 
         c1, c2, c3 = st.columns([1, 2, 1])
         with c2:
             submit = st.form_submit_button("Login", use_container_width=True)
+
+    c1, c2, c3 = st.columns([1, 2, 1])
+    with c2:
+        go_recovery = st.button(
+            "Forgot password?",
+            type="tertiary",
+            use_container_width=True
+        )
 
     st.markdown(
         '<div class="create-account">Don’t have an account?</div>',
         unsafe_allow_html=True
     )
 
-    c1, c2, c3 = st.columns([1.4, 1, 1.4])
-    with c1:
+    c1, c2, c3 = st.columns([1, 2, 1])
+    with c2:
         go_signup = st.button("Create account", use_container_width=True)
-    with c3:
-        go_recovery = st.button("Forgot password?", use_container_width=True)
 
 
     if submit:
